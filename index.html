@@ -28,6 +28,12 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <script>
+    const supabaseUrl = 'https://aqlhsnkprwcxhqvizvyj.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxbGhzbmtwcndjeGhxdml6dnlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5ODkzMDksImV4cCI6MjA2NzU2NTMwOX0.OKEP8UOnhhhbl3finjKkgybFeMFz09yEW_lxWnjoFCY';
+    const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
+  </script>
+  
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
@@ -131,11 +137,6 @@
   </style>
 </head>
 <body class="min-h-screen">
-  <script>
-    const supabaseUrl = 'https://aqlhsnkprwcxhqvizvyj.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxbGhzbmtwcndjeGhxdml6dnlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5ODkzMDksImV4cCI6MjA2NzU2NTMwOX0.OKEP8UOnhhhbl3finjKkgybFeMFz09yEW_lxWnjoFCY';
-    const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
-  </script>
 
   <div id="loading" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
     <div class="w-12 h-12 border-4 border-catylac-blue border-t-transparent rounded-full animate-spin"></div>
