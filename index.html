@@ -1545,7 +1545,11 @@
     }
     
     // Pantau perubahan status auth
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+  console.log("Event:", event);
+  console.log("Session:", session);
+});
+ {
       if (session?.user) {
         const user = session.user;
         currentUserData = {
