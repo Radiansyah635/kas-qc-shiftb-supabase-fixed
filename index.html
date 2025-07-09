@@ -161,55 +161,85 @@
 const supabase = supabase.createClient('https://aqlhsnkprwcxhqvizvyj.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxbGhzbmtwcndjeGhxdml6dnlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5ODkzMDksImV4cCI6MjA2NzU2NTMwOX0.OKEP8UOnhhhbl3finjKkgybFeMFz09yEW_lxWnjoFCY');
 let currentUserData = null, transactions = [], agendas = [], posts = [], mediaToUpload = null, kasChart = null;
 
-// ==== Auth & UI Initialization ====
-document.getElementById('loginForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  showLoading();
-  const { error } = await supabase.auth.signInWithPassword({
-    email: document.getElementById('emailInput').value,
-    password: document.getElementById('passwordInput').value
-  });
-  hideLoading();
-  if (error) showNotification('Gagal login: '+error.message,'red');
-});
+  // === LOGIN FORM ===
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showLoading();
 
-function showResetPasswordForm() {
-  document.getElementById('resetContainer').classList.remove('hidden');
-}
-function hideResetPasswordForm() {
-  document.getElementById('resetContainer').classList.add('hidden');
-}
-async function sendResetPasswordLink() {
-  const email = document.getElementById('resetEmailInput').value.trim();
-  if (!email) return showNotification('Masukkan email','red');
-  showLoading();
-  const { error } = await supabase.auth.resetPasswordForEmail(email,{
-    redirectTo: window.location.origin+'/index.html'
-  });
-  hideLoading();
-  showNotification(error?'Gagal: '+error.message:'Link reset dikirim','green');
-}
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
 
-supabase.auth.onAuthStateChange((e,s) => {
-  const loginSec=document.getElementById('loginSection'),
-        app=document.getElementById('appContainer'),
-        adminNav=document.getElementById('adminNav');
-  if (s?.user) {
-    const u=s.user;
-    currentUserData={ email:u.email, displayName:u.user_metadata?.full_name||u.email.split('@')[0], photoURL:u.user_metadata?.avatar_url||`https://i.pravatar.cc/40?u=${u.email}` };
-    document.querySelectorAll('#currentUserAvatar').forEach(el=>el.src=currentUserData.photoURL);
-    loginSec.style.display='none'; app.classList.remove('hidden');
-    const isAdmin = u.email==='radiansyahhanif@gmail.com';
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    hideLoading();
+
+    if (error) {
+      showNotification('Gagal login: ' + error.message, 'red');
+    }
+  });
+
+  // === RESET PASSWORD ===
+  function showResetPasswordForm() {
+    document.getElementById('resetContainer').classList.remove('hidden');
+  }
+
+  function hideResetPasswordForm() {
+    document.getElementById('resetContainer').classList.add('hidden');
+  }
+
+  async function sendResetPasswordLink() {
+    const email = document.getElementById('resetEmailInput').value.trim();
+    if (!email) return showNotification('Masukkan email', 'red');
+
+    showLoading();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/index.html'
+    });
+    hideLoading();
+
+    showNotification(error ? 'Gagal: ' + error.message : 'Link reset dikirim', error ? 'red' : 'green');
+  }
+
+  // === CEK SESI LOGIN SAAT HALAMAN DIBUKA ===
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session?.user) handleLogin(session.user);
+  });
+
+  // === PANTAU PERUBAHAN STATUS LOGIN ===
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (session?.user) {
+      handleLogin(session.user);
+    } else {
+      // Logout atau belum login
+      document.getElementById('appContainer').classList.add('hidden');
+      document.getElementById('loginSection').style.display = 'flex';
+    }
+  });
+
+  // === TAMPILKAN DATA USER DAN UI ===
+  function handleLogin(user) {
+    const loginSec = document.getElementById('loginSection');
+    const app = document.getElementById('appContainer');
+    const adminNav = document.getElementById('adminNav');
+
+    currentUserData = {
+      email: user.email,
+      displayName: user.user_metadata?.full_name || user.email.split('@')[0],
+      photoURL: user.user_metadata?.avatar_url || `https://i.pravatar.cc/40?u=${user.email}`
+    };
+
+    document.querySelectorAll('#currentUserAvatar').forEach(el => el.src = currentUserData.photoURL);
+    loginSec.style.display = 'none';
+    app.classList.remove('hidden');
+
+    const isAdmin = user.email === 'radiansyahhanif@gmail.com';
     localStorage.setItem('isAdmin', isAdmin);
-    isAdmin?adminNav.classList.remove('hidden'):adminNav.classList.add('hidden');
+    isAdmin ? adminNav.classList.remove('hidden') : adminNav.classList.add('hidden');
+
     showSection('dashboard');
     loadDashboard();
-    loadTransactions(); loadAgendas();
-  } else {
-    app.classList.add('hidden'); loginSec.style.display='flex';
+    loadTransactions();
+    loadAgendas();
   }
-});
-supabase.auth.getSession().then(({data:{session}})=>{ if(session) supabase.auth.onAuthStateChange('SIGNED_IN',session); });
 
 // ==== Navigation ====
 function showSection(id, el) {
