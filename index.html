@@ -1,490 +1,1640 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kas QC Shift B</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'catylac-mint': '#a2e4b8',
+            'catylac-lavender': '#b5b2e2',
+            'catylac-peach': '#ffb7b2',
+            'catylac-coral': '#ff8e8e',
+            'catylac-blue': '#89c4f4',
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    /* Animasi & helper classes */
-    .float-animation { animation: float 4s infinite ease-in-out; }
-    @keyframes float { 0%,100% {transform:translateY(0);}50%{transform:translateY(-10px);} }
-    .fade-in { animation: fadeIn 0.3s ease-in; }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(10px);}to{opacity:1;} }
-    .edit-form-textarea { width:100%; padding:.5rem; border:1px solid #ccc; border-radius:.5rem; margin-bottom:.5rem; }
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8f9fa;
+    }
+
+    .float-animation {
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .sidebar {
+      background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(245,245,245,0.9) 100%);
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-item {
+      @apply block px-4 py-3 rounded-lg transition-all;
+    }
+
+    .nav-item:hover {
+      @apply bg-catylac-mint/30 text-catylac-blue;
+    }
+
+    .nav-item.active {
+      @apply bg-catylac-blue text-white;
+    }
+
+    .dashboard-card {
+      @apply rounded-2xl p-6 text-white shadow-lg;
+    }
+
+    .post-container {
+      @apply space-y-4;
+    }
+
+    .post {
+      @apply bg-white p-4 rounded-lg shadow transition-all hover:shadow-md;
+    }
+
+    .post-avatar {
+      @apply w-10 h-10 rounded-full mr-3;
+    }
+
+    .admin-input {
+      @apply w-full px-4 py-2 rounded-lg border-2 border-catylac-lavender focus:border-catylac-peach focus:ring-2 focus:ring-catylac-mint;
+    }
+
+    .admin-submit-btn {
+      @apply px-4 py-2 text-white rounded-lg transition-all transform hover:scale-105;
+    }
+
+    .admin-cancel-btn {
+      @apply px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300;
+    }
+
+    .admin-table {
+      @apply w-full table-auto text-sm bg-white rounded-lg overflow-hidden;
+    }
+
+    .admin-table th {
+      @apply p-3 text-left bg-catylac-blue text-white;
+    }
+
+    .admin-table td {
+      @apply p-3 border-b border-gray-200;
+    }
+
+    .dropdown-menu {
+      @apply absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 hidden border border-gray-100;
+    }
+
+    .dropdown-menu button {
+      @apply block px-4 py-2 text-sm hover:bg-gray-50 w-full text-left;
+    }
+
+    .edit-form-textarea {
+      @apply w-full border border-gray-300 rounded-lg px-3 py-2 mb-2;
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .edit-form-textarea:focus {
+      @apply border-catylac-blue outline-none ring-2 ring-catylac-blue/20;
+    }
   </style>
 </head>
-<body class="min-h-screen bg-gray-100 font-sans">
+<body class="min-h-screen">
+  <script>
+    const supabaseUrl = 'https://aqlhsnkprwcxhqvizvyj.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxbGhzbmtwcndjeGhxdml6dnlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5ODkzMDksImV4cCI6MjA2NzU2NTMwOX0.OKEP8UOnhhhbl3finjKkgybFeMFz09yEW_lxWnjoFCY';
+    const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
+  </script>
 
-<!-- Loading Indicator -->
-<div id="loading" class="hidden fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-  <div class="loader ease-linear rounded-full border-4 border-blue-400 border-t-transparent h-12 w-12"></div>
-</div>
+  <div id="loading" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="w-12 h-12 border-4 border-catylac-blue border-t-transparent rounded-full animate-spin"></div>
+  </div>
 
-<!-- Login -->
-<section id="loginSection" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 to-blue-200">
-  <form id="loginForm" class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md space-y-6 fade-in">
-    <h2 class="text-center text-2xl font-bold text-blue-600">Masuk Kas QC Shift B</h2>
-    <input id="emailInput" type="email" placeholder="Email" required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-300">
-    <input id="passwordInput" type="password" placeholder="Password" required class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-300">
-    <button type="submit" class="w-full bg-green-400 hover:bg-green-500 text-white py-3 rounded-lg font-semibold">Masuk</button>
-    <div class="text-right"><button type="button" onclick="showResetPasswordForm()" class="text-blue-500 hover:underline text-sm">Lupa password?</button></div>
+  <section id="loginSection" class="min-h-screen flex flex-col justify-center items-center p-4 bg-gradient-to-br from-catylac-mint to-catylac-lavender">
+    <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden w-full max-w-md fade-in">
+      <div class="px-8 py-12">
+        <div class="text-center mb-8">
+          <h1 class="text-4xl font-bold text-catylac-peach mb-2">Kas QC</h1>
+          <p class="text-catylac-blue">Manajemen Keuangan Tim</p>
+        </div>
 
-    <!-- Reset -->
-    <div id="resetContainer" class="hidden">
-      <input id="resetEmailInput" type="email" placeholder="Email untuk reset" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-300">
-      <div class="flex gap-2">
-        <button type="button" onclick="hideResetPasswordForm()" class="flex-1 bg-gray-200 text-gray-700 p-3 rounded-lg">Batal</button>
-        <button type="button" onclick="sendResetPasswordLink()" class="flex-1 bg-blue-500 text-white p-3 rounded-lg">Kirim Link</button>
+        <form id="loginForm" class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-catylac-blue mb-1">Email</label>
+            <input type="email" id="emailInput" required class="w-full px-4 py-3 rounded-lg border-2 border-catylac-lavender focus:border-catylac-peach focus:ring-2 focus:ring-catylac-mint">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-catylac-blue mb-1">Password</label>
+            <input type="password" id="passwordInput" required class="w-full px-4 py-3 rounded-lg border-2 border-catylac-lavender focus:border-catylac-peach focus:ring-2 focus:ring-catylac-mint">
+          </div>
+
+          <button type="submit" class="w-full bg-catylac-peach hover:bg-catylac-coral text-white font-bold py-3 px-4 rounded-lg transition-all transform hover:scale-105">
+            Masuk
+          </button>
+        </form>
       </div>
     </div>
-  </form>
-</section>
+  </section>
 
-<!-- Main -->
-<div id="appContainer" class="hidden min-h-screen flex">
-  <!-- Sidebar -->
-  <aside class="w-64 bg-white/80 backdrop-blur-lg shadow-xl p-6 space-y-6">
-    <div class="text-center">
-      <div class="w-24 h-24 mx-auto rounded-full bg-green-300 float-animation flex items-center justify-center text-white text-4xl font-bold">QC</div>
-      <h2 class="mt-2 font-bold text-xl text-blue-600">Tim QC Shift B</h2>
+  <div id="appContainer" class="hidden min-h-screen flex">
+    <div class="sidebar w-64 shadow-xl flex flex-col">
+      <div class="p-6 text-center">
+        <div class="w-24 h-24 mx-auto rounded-full bg-catylac-peach flex items-center justify-center text-white text-4xl font-bold mb-3 float-animation">
+          QC
+        </div>
+        <h2 class="font-bold text-catylac-blue">Tim QC Shift B</h2>
+      </div>
+
+      <nav class="flex-1 px-4 space-y-2 mt-6">
+        <a href="#" onclick="showSection('dashboard', event)" class="nav-item active"><i class="fas fa-home mr-3"></i> Dashboard</a>
+        <a href="#" onclick="showSection('agenda', event)" class="nav-item"><i class="fas fa-calendar-alt mr-3"></i> Agenda</a>
+        <a href="#" onclick="showSection('team', event)" class="nav-item"><i class="fas fa-users mr-3"></i> Team</a>
+        <a href="#" onclick="showSection('admin', event)" id="adminNav" class="nav-item hidden"><i class="fas fa-lock mr-3"></i> Admin</a>
+        <a href="#" onclick="showSection('whitepaper', event)" class="nav-item"><i class="fas fa-file-alt mr-3"></i> White Paper</a>
+      </nav>
+
+      <div class="p-4">
+        <button onclick="logout()" class="logout-btn w-full bg-catylac-coral hover:bg-catylac-peach text-white px-4 py-2 rounded-lg transition-all">
+          <i class="fas fa-sign-out-alt mr-2"></i> Logout
+        </button>
+      </div>
     </div>
-    <nav class="space-y-2">
-      <a href="#" class="nav-item block px-4 py-2 rounded hover:bg-green-200 active bg-green-200" onclick="showSection('dashboard', this)">Dashboard</a>
-      <a href="#" class="nav-item block px-4 py-2 rounded hover:bg-green-200" onclick="showSection('agenda', this)">Agenda</a>
-      <a href="#" class="nav-item block px-4 py-2 rounded hover:bg-green-200" onclick="showSection('team', this)">Tim</a>
-      <a href="#" id="adminNav" class="nav-item hidden block px-4 py-2 rounded hover:bg-green-200" onclick="showSection('admin', this)">Admin Panel</a>
-      <a href="#" class="nav-item block px-4 py-2 rounded hover:bg-green-200" onclick="showSection('whitepaper', this)">White Paper</a>
-    </nav>
-    <button onclick="supabase.auth.signOut()" class="w-full mt-8 bg-red-400 hover:bg-red-500 text-white py-2 rounded-lg"><i class="fas fa-sign-out-alt mr-2"></i>Logout</button>
-  </aside>
 
-  <!-- Content -->
-  <main class="flex-1 overflow-y-auto p-8 space-y-8 bg-gray-50">
-    <!-- Dashboard -->
-    <section id="dashboard" class="fade-in">
-      <h1 class="text-2xl font-bold text-blue-600 mb-6">Dashboard Kas</h1>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="p-6 bg-blue-400 rounded-2xl text-white shadow-lg"><h3>Total Kas</h3><p id="totalKas" class="text-3xl font-bold mt-2">Rp 0</p></div>
-        <div class="p-6 bg-green-300 rounded-2xl text-white shadow-lg"><h3>Kas Masuk</h3><p id="kasMasuk" class="text-3xl font-bold mt-2">Rp 0</p></div>
-        <div class="p-6 bg-pink-300 rounded-2xl text-white shadow-lg"><h3>Kas Keluar</h3><p id="kasKeluar" class="text-3xl font-bold mt-2">Rp 0</p></div>
-      </div>
-      <canvas id="kasChart" class="bg-white rounded-2xl shadow-lg p-4 mt-6"></canvas>
+    <div class="flex-1 overflow-y-auto p-8 bg-gray-50">
+      <section id="dashboard" class="fade-in">
+        <h1 class="text-3xl font-bold text-catylac-blue mb-8">Dashboard Kas</h1>
 
-      <!-- Social -->
-      <div class="bg-white rounded-2xl shadow-lg p-6">
-        <div class="flex items-start mb-4">
-          <img id="currentUserAvatar" src="" class="w-10 h-10 rounded-full mr-3">
-          <textarea id="postContent" class="flex-1 border rounded-lg p-3" placeholder="Apa yang ingin Anda sampaikan?"></textarea>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div class="dashboard-card bg-gradient-to-r from-catylac-blue to-catylac-lavender">
+            <h3 class="text-lg font-medium">Total Kas</h3>
+            <p id="totalKas" class="text-2xl font-bold mt-2">Rp 0</p>
+          </div>
+
+          <div class="dashboard-card bg-gradient-to-r from-catylac-mint to-catylac-blue">
+            <h3 class="text-lg font-medium">Kas Masuk</h3>
+            <p id="kasMasuk" class="text-2xl font-bold mt-2">Rp 0</p>
+          </div>
+
+          <div class="dashboard-card bg-gradient-to-r from-catylac-peach to-catylac-coral">
+            <h3 class="text-lg font-medium">Kas Keluar</h3>
+            <p id="kasKeluar" class="text-2xl font-bold mt-2">Rp 0</p>
+          </div>
         </div>
-        <div id="mediaPreview" class="mb-4"></div>
-        <div class="flex justify-between mb-4">
-          <div class="space-x-4"><button class="text-blue-500" onclick="openMediaPicker('image')"><i class="fas fa-image mr-1"></i>Foto</button><button class="text-green-600" onclick="openMediaPicker('video')"><i class="fas fa-video mr-1"></i>Video</button><button class="text-red-500" onclick="openMediaPicker('pdf')"><i class="fas fa-file-pdf mr-1"></i>PDF</button></div>
-          <button onclick="createPost()" class="bg-pink-300 hover:bg-pink-400 text-white px-4 py-2 rounded-lg">Posting</button>
+
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <h2 class="text-xl font-bold text-catylac-blue mb-4">Grafik Kas Bulan Ini</h2>
+          <canvas id="kasChart" height="200"></canvas>
         </div>
-        <div id="postFeed" class="space-y-4"></div>
-      </div>
-    </section>
 
-    <!-- Agenda -->
-    <section id="agenda" class="hidden fade-in">
-      <h1 class="text-2xl font-bold text-blue-600 mb-6">Agenda Meeting</h1>
-      <div id="agendaList" class="space-y-4"></div>
-    </section>
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <div class="flex items-center mb-4">
+            <img id="currentUserAvatar" src="https://i.pravatar.cc/40" class="w-10 h-10 rounded-full mr-3">
+            <textarea id="postContent" class="flex-1 border-2 border-catylac-lavender rounded-lg px-4 py-2" placeholder="Apa yang ingin Anda sampaikan?"></textarea>
+          </div>
 
-    <!-- Tim -->
-    <section id="team" class="hidden fade-in">
-      <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">Tim QC Shift B</h1>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-white rounded-lg p-6 shadow text-center"><img class="w-24 h-24 rounded-full mx-auto mb-4" src="https://i.pravatar.cc/150?u=ramdhani"><p class="font-bold">Ramdhani</p><p class="text-blue-500">Koordinator</p></div>
-        <div class="bg-white rounded-lg p-6 shadow text-center"><img class="w-24 h-24 rounded-full mx-auto mb-4" src="https://i.pravatar.cc/150?u=farhan"><p class="font-bold">Farhan Nasution</p><p class="text-blue-500">Anggota</p></div>
-        <div class="bg-white rounded-lg p-6 shadow text-center"><img class="w-24 h-24 rounded-full mx-auto mb-4" src="https://i.pravatar.cc/150?u=wisnu"><p class="font-bold">Wisnu Putro</p><p class="text-blue-500">Anggota</p></div>
-      </div>
-    </section>
+          <div id="mediaPreview" class="mb-4"></div>
 
-    <!-- Admin -->
-    <section id="admin" class="hidden fade-in">
-      <h1 class="text-2xl font-bold text-blue-600 mb-6">Admin Panel</h1>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Form Transaksi -->
+          <div class="flex justify-between mb-6">
+            <div class="flex space-x-4">
+              <button onclick="openMediaPicker('image')" class="social-btn text-catylac-blue">
+                <i class="fas fa-image mr-1"></i> Foto
+              </button>
+              <button onclick="openMediaPicker('video')" class="social-btn text-catylac-peach">
+                <i class="fas fa-video mr-1"></i> Video
+              </button>
+              <button onclick="openMediaPicker('pdf')" class="social-btn text-catylac-coral">
+                <i class="fas fa-file-pdf mr-1"></i> PDF
+              </button>
+            </div>
+            <button onclick="createPost()" class="post-btn bg-catylac-peach hover:bg-catylac-coral text-white px-4 py-2 rounded-lg">
+              Posting
+            </button>
+          </div>
+
+          <div id="postFeed" class="space-y-4">
+            </div>
+        </div>
+      </section>
+
+      <section id="agenda" class="hidden fade-in">
+        <h1 class="text-3xl font-bold text-catylac-blue mb-8">Agenda Meeting</h1>
+        <div id="agendaList" class="space-y-4">
+          </div>
+      </section>
+
+      <section id="team" class="hidden fade-in">
+        <h1 class="text-3xl font-bold text-catylac-blue mb-8 text-center">Tim QC Shift B</h1>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow text-center">
+            <img src="https://i.pravatar.cc/150?u=ramdhani" class="mx-auto rounded-full w-24 h-24 object-cover mb-4">
+            <p class="font-bold text-lg">Ramdhani</p>
+            <p class="text-sm text-catylac-blue">Koordinator</p>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow text-center">
+            <img src="https://i.pravatar.cc/150?u=farhan" class="mx-auto rounded-full w-24 h-24 object-cover mb-4">
+            <p class="font-bold text-lg">Farhan Nasution</p>
+            <p class="text-sm text-catylac-blue">Anggota</p>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow text-center">
+            <img src="https://i.pravatar.cc/150?u=wisnu" class="mx-auto rounded-full w-24 h-24 object-cover mb-4">
+            <p class="font-bold text-lg">Wisnu Putro</p>
+            <p class="text-sm text-catylac-blue">Anggota</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="admin" class="hidden fade-in">
+        <h1 class="text-3xl font-bold text-catylac-blue mb-8">Admin Panel</h1>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div class="bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-xl font-bold text-catylac-peach mb-4">Input Transaksi</h2>
+            <form id="formKas" class="space-y-4">
+              <input type="hidden" id="editTransaksiId">
+
+              <div>
+                <label class="block text-sm font-medium text-catylac-blue mb-1">Tanggal</label>
+                <input type="date" id="tgl" class="w-full admin-input" required>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-catylac-blue mb-1">Keterangan</label>
+                <input type="text" id="ket" placeholder="Contoh: Iuran bulanan" class="w-full admin-input" required>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-catylac-blue mb-1">Jenis</label>
+                <select id="tipe" class="w-full admin-input" required>
+                  <option value="">-- Pilih --</option>
+                  <option value="Masuk">Kas Masuk</option>
+                  <option value="Keluar">Kas Keluar</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-catylac-blue mb-1">Jumlah (Rp)</label>
+                <input type="number" id="jml" placeholder="10000" min="1" class="w-full admin-input" required>
+              </div>
+
+              <div class="flex space-x-3">
+                <button type="submit" id="submitTransaksi" class="admin-submit-btn bg-catylac-peach">
+                  Simpan
+                </button>
+                <button type="button" id="cancelEditTransaksi" onclick="cancelEditTransaksi()" class="admin-cancel-btn hidden">
+                  Batal
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-xl font-bold text-catylac-coral mb-4">Input Agenda</h2>
+            <form id="formAgenda" class="space-y-4">
+              <input type="hidden" id="editAgendaId">
+
+              <div>
+                <label class="block text-sm font-medium text-catylac-blue mb-1">Agenda</label>
+                <input type="text" id="agendaText" placeholder="Contoh: Rapat evaluasi" class="w-full admin-input" required>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-catylac-blue mb-1">Tanggal</label>
+                <input type="date" id="agendaDate" class="w-full admin-input" required>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-catylac-blue mb-1">Gambar (Opsional)</label>
+                <input type="file" id="agendaImg" accept="image/*" class="w-full admin-input">
+              </div>
+
+              <div id="currentImageContainer" class="hidden">
+                <label class="block text-sm font-medium text-catylac-blue mb-1">Gambar Saat Ini</label>
+                <img id="currentImage" class="max-w-full h-32 object-contain rounded">
+                <button type="button" onclick="removeAgendaImage()" class="mt-2 text-sm text-catylac-coral">Hapus Gambar</button>
+              </div>
+
+              <div class="flex space-x-3">
+                <button type="submit" id="submitAgenda" class="admin-submit-btn bg-catylac-coral">
+                  Simpan
+                </button>
+                <button type="button" id="cancelEditAgenda" onclick="cancelEditAgenda()" class="admin-cancel-btn hidden">
+                  Batal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
         <div class="bg-white rounded-2xl shadow-lg p-6">
-          <h2 class="text-xl font-bold text-pink-300 mb-4">Input Transaksi</h2>
-          <form id="formKas" class="space-y-4">
-            <input type="hidden" id="editTransaksiId">
-            <input type="date" id="tgl" class="w-full p-3 border rounded" required>
-            <input type="text" id="ket" placeholder="Keterangan" class="w-full p-3 border rounded" required>
-            <select id="tipe" class="w-full p-3 border rounded" required><option value="">--Jenis--</option><option value="Masuk">Masuk</option><option value="Keluar">Keluar</option></select>
-            <input type="number" id="jml" placeholder="Jumlah" class="w-full p-3 border rounded" required>
-            <div class="flex gap-2">
-              <button type="submit" id="submitTransaksi" class="flex-1 bg-pink-300 text-white p-3 rounded-lg">Simpan</button>
-              <button type="button" id="cancelEditTransaksi" onclick="cancelEditTransaksi()" class="flex-1 bg-gray-200 text-gray-700 p-3 rounded-lg hidden">Batal</button>
-            </div>
-          </form>
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-catylac-blue">Daftar Transaksi</h2>
+            <button onclick="exportToPDF()" class="bg-catylac-blue hover:bg-catylac-lavender text-white px-4 py-2 rounded-lg">
+              <i class="fas fa-file-pdf mr-2"></i> Export PDF
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full admin-table">
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Keterangan</th>
+                  <th>Tipe</th>
+                  <th class="text-right">Jumlah</th>
+                  <th class="text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="logBody">
+                </tbody>
+            </table>
+          </div>
         </div>
-        <!-- Form Agenda -->
+      </section>
+
+      <section id="whitepaper" class="hidden fade-in">
+        <h1 class="text-3xl font-bold text-catylac-blue mb-8">White Paper</h1>
         <div class="bg-white rounded-2xl shadow-lg p-6">
-          <h2 class="text-xl font-bold text-green-300 mb-4">Input Agenda</h2>
-          <form id="formAgenda" class="space-y-4">
-            <input type="hidden" id="editAgendaId">
-            <input type="text" id="agendaText" placeholder="Agenda" class="w-full p-3 border rounded" required>
-            <input type="date" id="agendaDate" class="w-full p-3 border rounded" required>
-            <input type="file" id="agendaImg" accept="image/*" class="w-full p-3 border rounded">
-            <div id="currentImageContainer" class="hidden">
-              <img id="currentImage" class="max-h-32 w-full mb-2">
-              <button type="button" onclick="removeAgendaImage()" class="text-red-500 underline">Hapus Gambar</button>
-            </div>
-            <div class="flex gap-2">
-              <button type="submit" id="submitAgenda" class="flex-1 bg-green-300 text-white p-3 rounded-lg">Simpan</button>
-              <button type="button" id="cancelEditAgenda" onclick="cancelEditAgenda()" class="flex-1 bg-gray-200 text-gray-700 p-3 rounded-lg hidden">Batal</button>
-            </div>
-          </form>
+          <p class="text-gray-700">Dokumen kebijakan dan panduan akan ditampilkan di sini.</p>
         </div>
-      </div>
+      </section>
+    </div>
+  </div>
 
-      <!-- Daftar Transaksi -->
-      <div class="bg-white rounded-2xl shadow-lg p-6">
-        <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold text-blue-600">Daftar Transaksi</h2><button onclick="exportToPDF()" class="bg-blue-400 text-white px-4 py-2 rounded-lg"><i class="fas fa-file-pdf mr-2"></i>Export PDF</button></div>
-        <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-blue-500 text-white"><tr><th class="p-3">Tanggal</th><th class="p-3">Keterangan</th><th class="p-3">Tipe</th><th class="p-3 text-right">Jumlah</th><th class="p-3 text-center">Aksi</th></tr></thead><tbody id="logBody"></tbody></table></div>
-      </div>
-    </section>
+  <script>
+    // ==================== GLOBAL VARIABLES ====================
+    let kasChart = null;
+    let transactions = [];
+    let agendas = [];
+    let posts = [];
+    let mediaToUpload = null;
+    let currentUserData = null; // Stored user data (email, display name, photo URL)
 
-    <!-- Whitepaper -->
-    <section id="whitepaper" class="hidden fade-in"><h1 class="text-2xl font-bold text-blue-600 mb-6">White Paper</h1><div class="bg-white rounded-2xl shadow-lg p-6"><p class="text-gray-700">Dokumen kebijakan dan panduan akan ditampilkan di sini.</p></div></section>
-  </main>
-</div>
-  
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>
-// ==== Supabase Setup ====
-const supabase = supabase.createClient('https://aqlhsnkprwcxhqvizvyj.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxbGhzbmtwcndjeGhxdml6dnlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5ODkzMDksImV4cCI6MjA2NzU2NTMwOX0.OKEP8UOnhhhbl3finjKkgybFeMFz09yEW_lxWnjoFCY');
-let currentUserData = null, transactions = [], agendas = [], posts = [], mediaToUpload = null, kasChart = null;
+    // ==================== AUTHENTICATION ====================
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
 
-  // === LOGIN FORM ===
-  document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    showLoading();
+      const email = document.getElementById('emailInput').value;
+      const password = document.getElementById('passwordInput').value;
 
-    const email = document.getElementById('emailInput').value.trim();
-    const password = document.getElementById('passwordInput').value;
+      showLoading();
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    hideLoading();
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
 
-    if (error) {
-      showNotification('Gagal login: ' + error.message, 'red');
-    }
-  });
+        if (error) throw error;
 
-  // === RESET PASSWORD ===
-  function showResetPasswordForm() {
-    document.getElementById('resetContainer').classList.remove('hidden');
-  }
+        const user = data.user;
+        currentUserData = {
+          email: user.email,
+          displayName: user.user_metadata?.full_name || user.email.split('@')[0],
+          photoURL: user.user_metadata?.avatar_url || `https://i.pravatar.cc/40?u=${user.email}`
+        };
 
-  function hideResetPasswordForm() {
-    document.getElementById('resetContainer').classList.add('hidden');
-  }
+        // Update avatar di navbar
+        document.getElementById('currentUserAvatar').src = currentUserData.photoURL;
 
-  async function sendResetPasswordLink() {
-    const email = document.getElementById('resetEmailInput').value.trim();
-    if (!email) return showNotification('Masukkan email', 'red');
+        // Cek jika user adalah admin
+        if (email === 'radiansyahhanif@gmail.com') { // Ganti dengan email admin Anda
+          localStorage.setItem('isAdmin', 'true');
+          document.getElementById('adminNav').classList.remove('hidden');
+        } else {
+          localStorage.setItem('isAdmin', 'false');
+          document.getElementById('adminNav').classList.add('hidden'); // Sembunyikan jika bukan admin
+        }
 
-    showLoading();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/index.html'
+        hideLoading();
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('appContainer').classList.remove('hidden');
+        showSection('dashboard', { target: document.querySelector('.nav-item.active') }); // Set dashboard as active
+        loadInitialData();
+      } catch (error) {
+        hideLoading();
+        console.error("Login error:", error);
+
+        let errorMessage = 'Terjadi kesalahan saat login';
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Email atau password salah';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Email belum diverifikasi';
+        }
+
+        showNotification(errorMessage, 'red');
+      }
     });
-    hideLoading();
 
-    showNotification(error ? 'Gagal: ' + error.message : 'Link reset dikirim', error ? 'red' : 'green');
-  }
+    async function logout() {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Logout error:", error);
+        showNotification('Gagal logout', 'red');
+        return;
+      }
 
-  // === CEK SESI LOGIN SAAT HALAMAN DIBUKA ===
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session?.user) handleLogin(session.user);
-  });
-
-  // === PANTAU PERUBAHAN STATUS LOGIN ===
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (session?.user) {
-      handleLogin(session.user);
-    } else {
-      // Logout atau belum login
+      localStorage.removeItem('isAdmin');
+      currentUserData = null;
       document.getElementById('appContainer').classList.add('hidden');
       document.getElementById('loginSection').style.display = 'flex';
+      document.getElementById('emailInput').value = '';
+      document.getElementById('passwordInput').value = '';
+      // Reset active nav item and hide admin nav
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      document.getElementById('adminNav').classList.add('hidden');
     }
-  });
 
-  // === TAMPILKAN DATA USER DAN UI ===
-  function handleLogin(user) {
-    const loginSec = document.getElementById('loginSection');
-    const app = document.getElementById('appContainer');
-    const adminNav = document.getElementById('adminNav');
+    // ==================== NAVIGATION ====================
+    function showSection(id, event) {
+      if (event) {
+        event.preventDefault(); // Prevent default link behavior
+        // Update active nav item
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.classList.remove('active');
+        });
+        event.target.classList.add('active');
+      }
 
-    currentUserData = {
-      email: user.email,
-      displayName: user.user_metadata?.full_name || user.email.split('@')[0],
-      photoURL: user.user_metadata?.avatar_url || `https://i.pravatar.cc/40?u=${user.email}`
-    };
+      // Hide all sections
+      document.querySelectorAll('section').forEach(section => {
+        section.classList.add('hidden');
+      });
 
-    document.querySelectorAll('#currentUserAvatar').forEach(el => el.src = currentUserData.photoURL);
-    loginSec.style.display = 'none';
-    app.classList.remove('hidden');
+      // Show selected section
+      const section = document.getElementById(id);
+      if (section) {
+        section.classList.remove('hidden');
 
-    const isAdmin = user.email === 'radiansyahhanif@gmail.com';
-    localStorage.setItem('isAdmin', isAdmin);
-    isAdmin ? adminNav.classList.remove('hidden') : adminNav.classList.add('hidden');
+        // Load data if needed
+        if (id === 'dashboard') {
+          loadDashboard();
+        } else if (id === 'agenda') {
+          loadAgendas();
+        } else if (id === 'admin') {
+          loadTransactions();
+          loadAgendas(); // Load agendas for admin too
+        }
+      }
+    }
 
-    showSection('dashboard');
-    loadDashboard();
-    loadTransactions();
-    loadAgendas();
-  }
+    // ==================== DASHBOARD ====================
+    async function loadDashboard() {
+      showLoading();
 
-// ==== Navigation ====
-function showSection(id, el) {
-  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-  if(el) el.classList.add('active');
-  ['dashboard','agenda','team','admin','whitepaper'].forEach(s=>document.getElementById(s).classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
+      try {
+        // Load transactions
+        const { data: transactionData, error: transactionError } = await supabase
+          .from('transactions')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-// ==== Dashboard: Chart & Social ====
-async function loadDashboard() {
-  showLoading();
-  let { data:tx, error:te }=await supabase.from('transactions').select('*').order('tgl',{ascending:true});
-  if(te){hideLoading();return showNotification('Load txn error','red')}
-  transactions=tx; updateDashboard();
+        if (transactionError) throw transactionError;
+        transactions = transactionData;
+        updateDashboard();
 
-  let { data:ps, error:pe }=await supabase.from('posts').select('*,comments(*)').order('created_at', {ascending:false});
-  hideLoading();
-  if(pe) return showNotification('Load post error','red');
-  posts=ps; renderPosts();
-}
+        // Load posts
+        const { data: postData, error: postError } = await supabase
+          .from('posts')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-function updateDashboard(){
-  const masuk=transactions.filter(t=>t.tipe==='Masuk').reduce((a,b)=>a+b.jml,0),
-        keluar=transactions.filter(t=>t.tipe==='Keluar').reduce((a,b)=>a+b.jml,0);
-  document.getElementById('kasMasuk').textContent=formatRupiah(masuk);
-  document.getElementById('kasKeluar').textContent=formatRupiah(keluar);
-  document.getElementById('totalKas').textContent=formatRupiah(masuk-keluar);
-  renderChart();
-}
+        if (postError) throw postError;
+        posts = postData;
+        renderPosts();
+      } catch (error) {
+        console.error("Load dashboard error:", error);
+        showNotification('Gagal memuat data dashboard', 'red');
+      } finally {
+        hideLoading();
+      }
+    }
 
-function renderChart(){
-  const ctx=document.getElementById('kasChart').getContext('2d');
-  if(kasChart) kasChart.destroy();
-  const labels=transactions.map(t=>t.tgl),
-        dataMasuk=transactions.map(t=>t.tipe=='Masuk'?t.jml:0),
-        dataKeluar=transactions.map(t=>t.tipe=='Keluar'?t.jml:0);
-  kasChart=new Chart(ctx,{type:'bar',data:{labels, datasets:[{label:'Masuk',data:dataMasuk,backgroundColor:'#a2e4b8'},{label:'Keluar',data:dataKeluar,backgroundColor:'#ffb7b2'}]}});
-}
+    function updateDashboard() {
+      // Calculate totals
+      const totalMasuk = transactions
+        .filter(t => t.tipe === 'Masuk')
+        .reduce((sum, t) => sum + t.jml, 0);
 
-function openMediaPicker(type){
-  const input=document.createElement('input');input.type='file';
-  if(type==='image') input.accept='image/*'; if(type==='video') input.accept='video/*'; if(type==='pdf') input.accept='.pdf';
-  input.onchange=e=>{
-    const f=e.target.files[0];if(!f)return;
-    mediaToUpload=f;const p=document.getElementById('mediaPreview');p.innerHTML='';
-    const rdr=new FileReader();rdr.onload=()=>{if(f.type.startsWith('image')) p.innerHTML=`<img src="${rdr.result}" class="max-h-40 rounded-lg">`;else if(f.type.startsWith('video')){const url=URL.createObjectURL(f); p.innerHTML=`<video controls src="${url}" class="max-h-40 rounded-lg">`;}};
-    rdr.readAsDataURL(f);
-  };input.click();
-}
+      const totalKeluar = transactions
+        .filter(t => t.tipe === 'Keluar')
+        .reduce((sum, t) => sum + t.jml, 0);
 
-async function createPost(){
-  const cont=document.getElementById('postContent').value.trim();
-  if(!cont) return showNotification('Isi konten','red');
-  showLoading();
-  const { data:{ user } } = await supabase.auth.getUser();
-  const newPost={content:cont,author:user.email,author_name:currentUserData.displayName,likes:0};
-  if(mediaToUpload){
-    const path=`posts/${user.id}/${Date.now()}_${mediaToUpload.name}`;
-    const { error:ue }=await supabase.storage.from('posts').upload(path,mediaToUpload);
-    if(ue){hideLoading();return showNotification('Upload gagal','red')}
-    const { data:{ publicUrl } }=supabase.storage.from('posts').getPublicUrl(path);
-    if(mediaToUpload.type.startsWith('image')) newPost.image_url=publicUrl;
-    if(mediaToUpload.type.startsWith('video')) newPost.video_url=publicUrl;
-    mediaToUpload=null;document.getElementById('mediaPreview').innerHTML='';
-  }
-  const { error:pe }=await supabase.from('posts').insert(newPost);
-  hideLoading();
-  if(pe) return showNotification('Gagal post','red');
-  document.getElementById('postContent').value='';
-  loadDashboard();
-  showNotification('Posting berhasil','green');
-}
+      document.getElementById('totalKas').textContent = formatRupiah(totalMasuk - totalKeluar);
+      document.getElementById('kasMasuk').textContent = formatRupiah(totalMasuk);
+      document.getElementById('kasKeluar').textContent = formatRupiah(totalKeluar);
 
-function renderPosts(){
-  const feed=document.getElementById('postFeed');feed.innerHTML='';
-  posts.forEach(p=>{
-    const div=document.createElement('div');div.className='post bg-white p-4 rounded-lg shadow-lg';
-    const timeAgo=formatRelativeTime(new Date(p.created_at).getTime());
-    const isAuthor=currentUserData?.email===p.author;
-    const commentsCount=p.comments?.length||0;
-    div.innerHTML=`
-      <div class="flex justify-between items-start mb-3">
-        <div class="flex items-center">
-          <img src="https://i.pravatar.cc/40?u=${p.author}" class="w-10 h-10 rounded-full mr-3">
-          <div><h4 class="font-bold">${p.author_name}</h4><p class="text-xs text-gray-500">${timeAgo}</p></div>
-        </div>
-        ${isAuthor?`<button onclick="deletePost('${p.id}')" class="text-red-500 text-sm">Hapus</button>`:``}
-      </div>
-      <p class="mb-3">${p.content}</p>
-      ${p.image_url?`<img src="${p.image_url}" class="rounded-lg mb-3 max-h-96 w-full object-contain border">`:''}
-      ${p.video_url?`<video controls src="${p.video_url}" class="rounded-lg mb-3 max-h-96 w-full border">`: ''}
-      <div class="flex gap-4 text-gray-600 text-sm border-t border-b py-2 my-2">
-        <button onclick="likePost('${p.id}')" class="flex items-center gap-1"><i class="fas fa-thumbs-up"></i><span id="likeCount-${p.id}">${p.likes}</span></button>
-        <button onclick="toggleComments('${p.id}')" class="flex items-center gap-1"><i class="fas fa-comment"></i>${commentsCount}</button>
-      </div>
-      <div id="comments-${p.id}" class="hidden mt-3">
-        <div class="flex mb-3">
-          <input type="text" id="commentInput-${p.id}" placeholder="Komentar..." class="flex-1 border rounded-l-lg px-3 py-2">
-          <button onclick="addComment('${p.id}')" class="bg-blue-500 text-white px-3 py-2 rounded-r-lg">Kirim</button>
-        </div>
-        <div id="commentList-${p.id}" class="space-y-2">
-          ${p.comments?.map(c=>`
-            <div class="flex items-start"><img src="https://i.pravatar.cc/30?u=${c.user_id}" class="w-6 h-6 rounded-full mr-2"><div class="bg-gray-100 rounded-lg px-3 py-2 flex-1"><p class="font-medium text-sm">${c.author_name}</p><p class="text-gray-700 text-sm">${c.text}</p><p class="text-gray-500 text-xs">${formatRelativeTime(c.timestamp)}</p></div></div>
-          `).join('')}
-        </div>
-      </div>
-      <div id="editForm-${p.id}" class="hidden mt-3"><textarea id="editContent-${p.id}" class="edit-form-textarea">${p.content}</textarea><div class="flex justify-end gap-2"><button onclick="cancelEdit('${p.id}')" class="px-3 py-1 bg-gray-200 rounded">Batal</button><button onclick="saveEdit('${p.id}')" class="px-3 py-1 bg-blue-500 text-white rounded">Simpan</button></div></div>
-    `;
-    feed.appendChild(div);
-  });
-}
+      // Update chart
+      updateChart();
+    }
 
-async function likePost(id){
-  const { data:{ user } } = await supabase.auth.getUser();
-  if(!user) return showNotification('Login dulu','red');
-  await supabase.from('post_likes').insert({ post_id: id, user_id: user.id });
-  await supabase.from('posts').update({ likes: supabase.raw('likes+1') }).eq('id', id);
-  loadDashboard();
-}
-async function addComment(id){
-  const { data:{ user } } = await supabase.auth.getUser();
-  const inp=document.getElementById(`commentInput-${id}`);
-  if(!inp.value.trim()) return;
-  await supabase.from('comments').insert({ post_id: id, user_id: user.id, author_name: currentUserData.displayName, text: inp.value.trim(), timestamp: Date.now() });
-  loadDashboard();
-}
-function toggleComments(id){document.getElementById(`comments-${id}`).classList.toggle('hidden');}
-function cancelEdit(id){document.getElementById(`editForm-${id}`).classList.add('hidden');}
-async function saveEdit(id){
-  const val=document.getElementById(`editContent-${id}`).value.trim();
-  if(!val) return showNotification('Tidak boleh kosong','red');
-  await supabase.from('posts').update({content:val}).eq('id',id);
-  loadDashboard();
-}
-async function deletePost(id){
-  if(!confirm('Hapus postingan?'))return;
-  await supabase.from('posts').delete().eq('id',id);
-  loadDashboard();
-}
+    function updateChart() {
+      const ctx = document.getElementById('kasChart').getContext('2d');
 
-// ==== Admin: Transaksi & Agenda ====
-document.getElementById('formKas').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const id=document.getElementById('editTransaksiId').value;
-  const obj={ tgl:document.getElementById('tgl').value, ket:document.getElementById('ket').value, tipe:document.getElementById('tipe').value, jml: Number(document.getElementById('jml').value) };
-  if(id) await supabase.from('transactions').update(obj).eq('id', id);
-  else await supabase.from('transactions').insert(obj);
-  resetKasForm(); loadDashboard(); loadTransactions();
-});
-async function loadTransactions(){
-  const { data, error } = await supabase.from('transactions').select('*').order('tgl',{ascending:false});
-  if(error) return showNotification('Load transaksi gagal','red');
-  transactions = data; updateTransactionsTable();
-}
-function updateTransactionsTable(){
-  const body=document.getElementById('logBody');
-  body.innerHTML='';
-  const isAdmin=localStorage.getItem('isAdmin')==='true';
-  transactions.forEach(t=>{
-    const row=document.createElement('tr');row.className='hover:bg-gray-50';
-    row.innerHTML=`
-      <td class="p-3">${formatDate(t.tgl)}</td><td class="p-3">${t.ket}</td><td class="p-3 ${t.tipe=='Masuk'?'text-green-500':'text-red-500'}">${t.tipe}</td><td class="p-3 text-right">${formatRupiah(t.jml)}</td><td class="p-3 text-center">${isAdmin?`<button onclick="editKas('${t.id}')" class="px-2 py-1 bg-yellow-400 text-white rounded mr-1">Edit</button><button onclick="deleteKas('${t.id}')" class="px-2 py-1 bg-red-400 text-white rounded">Hapus</button>`:'-'}</td>`;
-    body.appendChild(row);
-  });
-}
-function editKas(id){
-  const t=transactions.find(x=>x.id===id);
-  document.getElementById('tgl').value=t.tgl; document.getElementById('ket').value=t.ket;
-  document.getElementById('tipe').value=t.tipe; document.getElementById('jml').value=t.jml;
-  document.getElementById('editTransaksiId').value=id;
-  document.getElementById('submitTransaksi').textContent='Update';
-  document.getElementById('cancelEditTransaksi').classList.remove('hidden');
-}
-async function deleteKas(id){if(confirm('Yakin hapus?')){await supabase.from('transactions').delete().eq('id',id); loadDashboard(); loadTransactions();}}
-function cancelEditTransaksi(){resetKasForm();}
-function resetKasForm(){
-  document.getElementById('formKas').reset();
-  document.getElementById('editTransaksiId').value='';
-  document.getElementById('submitTransaksi').textContent='Simpan';
-  document.getElementById('cancelEditTransaksi').classList.add('hidden');
-}
+      if (kasChart) {
+        kasChart.destroy();
+      }
 
-// ==== Agenda ====
-document.getElementById('formAgenda').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const id=document.getElementById('editAgendaId').value;
-  const data={ text:document.getElementById('agendaText').value, date:document.getElementById('agendaDate').value };
-  if(id) await supabase.from('agendas').update(data).eq('id',id);
-  else await supabase.from('agendas').insert(data);
-  resetAgendaForm(); loadAgendas();
-});
-async function loadAgendas(){
-  const { data, error } = await supabase.from('agendas').select('*').order('date',{ascending:true});
-  if(error) return showNotification('Load agenda gagal','red');
-  agendas=data; renderAgendas();
-}
-function renderAgendas(){
-  const list=document.getElementById('agendaList'); list.innerHTML='';
-  const isAdmin=localStorage.getItem('isAdmin')==='true';
-  agendas.forEach(a=>{
-    const div=document.createElement('div'); div.className='bg-white p-4 rounded-lg shadow flex justify-between items-center';
-    div.innerHTML=`<div><h3 class="font-bold text-blue-600">${a.text}</h3><p class="text-sm text-gray-500">${formatDate(a.date)}</p></div>
-      ${isAdmin?`<div class="flex gap-2"><button onclick="editAgenda('${a.id}')" class="text-green-500"><i class="fas fa-edit"></i></button><button onclick="deleteAgenda('${a.id}')" class="text-red-500"><i class="fas fa-trash"></i></button></div>`:''}`;
-    list.appendChild(div);
-  });
-}
-function editAgenda(id){
-  const a=agendas.find(x=>x.id===id);
-  document.getElementById('agendaText').value=a.text; document.getElementById('agendaDate').value=a.date;
-  document.getElementById('editAgendaId').value=id;
-  document.getElementById('submitAgenda').textContent='Update';
-  document.getElementById('cancelEditAgenda').classList.remove('hidden');
-}
-async function deleteAgenda(id){if(confirm('Yakin hapus agenda?')){await supabase.from('agendas').delete().eq('id',id); loadAgendas();}}
-function cancelEditAgenda(){resetAgendaForm();}
-function resetAgendaForm(){
-  document.getElementById('formAgenda').reset();
-  document.getElementById('editAgendaId').value='';
-  document.getElementById('submitAgenda').textContent='Simpan';
-  document.getElementById('cancelEditAgenda').classList.add('hidden');
-}
+      // Group by month
+      const monthlyData = {};
+      transactions.forEach(t => {
+        const date = new Date(t.tgl);
+        const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
-// ==== Utils ====
-function formatRupiah(x) {return 'Rp '+Number(x).toLocaleString('id-ID');}
-function formatDate(d) {
-  const dt=new Date(d);
-  return dt.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
-}
-function formatRelativeTime(t){
-  const diff=Date.now()-t, minute=60000, hour=3600000, day=86400000;
-  return diff<minute?'Baru saja':diff<hour?`${Math.floor(diff/minute)} menit yang lalu`:diff<day?`${Math.floor(diff/hour)} jam yang lalu`:`${Math.floor(diff/day)} hari yang lalu`;
-}
+        if (!monthlyData[monthYear]) {
+          monthlyData[monthYear] = { masuk: 0, keluar: 0 };
+        }
 
-function showNotification(msg,type='blue'){
-  const el=document.createElement('div');
-  el.className=`fixed top-4 right-4 px-4 py-2 rounded shadow text-white ${type==='green'?'bg-green-500':type==='red'?'bg-red-500':'bg-blue-500'}`;
-  el.textContent=msg; document.body.appendChild(el);
-  setTimeout(()=>el.remove(),3000);
-}
+        if (t.tipe === 'Masuk') {
+          monthlyData[monthYear].masuk += t.jml;
+        } else {
+          monthlyData[monthYear].keluar += t.jml;
+        }
+      });
 
-function showLoading(){document.getElementById('loading').classList.remove('hidden');}
-function hideLoading(){document.getElementById('loading').classList.add('hidden');}
+      const labels = Object.keys(monthlyData).sort();
+      const masukData = labels.map(m => monthlyData[m].masuk);
+      const keluarData = labels.map(m => monthlyData[m].keluar);
 
-function exportToPDF(){alert('Implement PDF export pakai jsPDF');}
-</script>
+      kasChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Kas Masuk',
+              data: masukData,
+              backgroundColor: '#a2e4b8',
+            },
+            {
+              label: 'Kas Keluar',
+              data: keluarData,
+              backgroundColor: '#ffb7b2',
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return 'Rp ' + value.toLocaleString('id-ID');
+                }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': Rp ' + context.raw.toLocaleString('id-ID');
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // ==================== SOCIAL FEATURES ====================
+    function openMediaPicker(type) {
+      const input = document.createElement('input');
+      input.type = 'file';
+
+      if (type === 'image') {
+        input.accept = 'image/*';
+      } else if (type === 'video') {
+        input.accept = 'video/*';
+      } else if (type === 'pdf') {
+        input.accept = '.pdf'; // Supabase storage for PDFs
+      }
+
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        mediaToUpload = file;
+        const preview = document.getElementById('mediaPreview');
+        preview.innerHTML = '';
+
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            img.className = 'max-h-40 rounded-lg mt-2';
+            preview.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        } else if (file.type.startsWith('video/')) {
+          const video = document.createElement('video');
+          video.src = URL.createObjectURL(file);
+          video.controls = true;
+          video.className = 'max-h-40 rounded-lg mt-2';
+          preview.appendChild(video);
+        }
+        // No preview for PDF, just show file name
+        else if (file.type === 'application/pdf') {
+          const p = document.createElement('p');
+          p.textContent = `File PDF: ${file.name}`;
+          p.className = 'text-gray-600 mt-2';
+          preview.appendChild(p);
+        }
+      };
+
+      input.click();
+    }
+
+    async function createPost() {
+      const content = document.getElementById('postContent').value.trim();
+      if (!content && !mediaToUpload) {
+        showNotification('Isi konten posting atau pilih media terlebih dahulu', 'red');
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        showNotification('Anda harus login untuk posting', 'red');
+        return;
+      }
+
+      const post = {
+        content: content,
+        author: user.email,
+        author_name: currentUserData.displayName,
+        likes_count: 0, // Initial likes count
+        comments: {} // Initialize comments as an empty object
+      };
+
+      // Handle upload media jika ada
+      if (mediaToUpload) {
+        showLoading();
+        try {
+          const fileName = `${Date.now()}_${mediaToUpload.name}`;
+          const filePath = `${user.id}/${fileName}`;
+          const { error: uploadError } = await supabase.storage
+            .from('posts')
+            .upload(filePath, mediaToUpload);
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('posts')
+            .getPublicUrl(filePath);
+
+          if (mediaToUpload.type.startsWith('image/')) {
+            post.image_url = publicUrl;
+          } else if (mediaToUpload.type.startsWith('video/')) {
+            post.video_url = publicUrl;
+          } else if (mediaToUpload.type === 'application/pdf') {
+            post.pdf_url = publicUrl;
+          }
+
+          mediaToUpload = null;
+          document.getElementById('mediaPreview').innerHTML = '';
+        } catch (error) {
+          console.error("Upload error:", error);
+          showNotification('Gagal upload media', 'red');
+          hideLoading();
+          return;
+        }
+      }
+
+      try {
+        const { error } = await supabase
+          .from('posts')
+          .insert(post);
+
+        if (error) throw error;
+
+        document.getElementById('postContent').value = '';
+        showNotification('Posting berhasil dibuat', 'green');
+        loadDashboard(); // Reload dashboard to update posts
+      } catch (error) {
+        console.error("Posting error:", error);
+        showNotification('Gagal membuat posting', 'red');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    async function deletePost(postId) {
+      if (!confirm('Apakah Anda yakin ingin menghapus posting ini?')) return;
+
+      showLoading();
+      try {
+        const postToDelete = posts.find(p => p.id === postId);
+
+        // Delete media from storage if it exists
+        if (postToDelete.image_url) {
+          const pathSegments = postToDelete.image_url.split('/');
+          const filePathInBucket = pathSegments.slice(pathSegments.indexOf('posts') + 1).join('/');
+          const { error: deleteImageError } = await supabase.storage.from('posts').remove([filePathInBucket]);
+          if (deleteImageError) console.error("Error deleting image from storage:", deleteImageError);
+        }
+        if (postToDelete.video_url) {
+          const pathSegments = postToDelete.video_url.split('/');
+          const filePathInBucket = pathSegments.slice(pathSegments.indexOf('posts') + 1).join('/');
+          const { error: deleteVideoError } = await supabase.storage.from('posts').remove([filePathInBucket]);
+          if (deleteVideoError) console.error("Error deleting video from storage:", deleteVideoError);
+        }
+        if (postToDelete.pdf_url) {
+          const pathSegments = postToDelete.pdf_url.split('/');
+          const filePathInBucket = pathSegments.slice(pathSegments.indexOf('posts') + 1).join('/');
+          const { error: deletePdfError } = await supabase.storage.from('posts').remove([filePathInBucket]);
+          if (deletePdfError) console.error("Error deleting PDF from storage:", deletePdfError);
+        }
+
+        // Delete post from database
+        const { error } = await supabase
+          .from('posts')
+          .delete()
+          .eq('id', postId);
+
+        if (error) throw error;
+
+        showNotification('Posting berhasil dihapus', 'green');
+        loadDashboard(); // Reload dashboard to update posts
+      } catch (error) {
+        console.error("Delete post error:", error);
+        showNotification('Gagal menghapus posting', 'red');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function renderPosts() {
+      const postFeed = document.getElementById('postFeed');
+      postFeed.innerHTML = '';
+
+      posts.forEach(post => {
+        const postEl = document.createElement('div');
+        postEl.className = 'post bg-white rounded-xl shadow-md p-4 mb-4';
+        postEl.id = `post-${post.id}`;
+
+        const user = supabase.auth.getUser(); // Get current user
+        const isAuthor = user && currentUserData && post.author === currentUserData.email;
+        const postTime = formatRelativeTime(new Date(post.created_at).getTime());
+        const commentsCount = post.comments ? Object.keys(post.comments).length : 0;
+        const isLiked = post.likes_by && currentUserData && post.likes_by[currentUserData.email.replace(/[^a-zA-Z0-9]/g, '')];
+
+        postEl.innerHTML = `
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center">
+              <img src="${currentUserData.photoURL || `https://i.pravatar.cc/40?u=${post.author}`}"
+                   class="w-10 h-10 rounded-full mr-3">
+              <div>
+                <h4 class="font-bold text-gray-800">${post.author_name || post.author.split('@')[0]}</h4>
+                <p class="text-xs text-gray-500">${postTime}</p>
+              </div>
+            </div>
+
+            ${isAuthor ? `
+              <div class="dropdown relative">
+                <button class="text-gray-400 hover:text-gray-600">
+                  <i class="fas fa-ellipsis-h"></i>
+                </button>
+                <div class="dropdown-menu">
+                  <button onclick="openEditPost('${post.id}')"
+                          class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
+                    <i class="fas fa-edit mr-2"></i> Edit
+                  </button>
+                  <button onclick="deletePost('${post.id}')"
+                          class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left">
+                    <i class="fas fa-trash mr-2"></i> Hapus
+                  </button>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+
+          <div id="postContent-${post.id}">
+            <p class="mb-3 text-gray-700">${post.content}</p>
+
+            ${post.image_url ? `
+              <img src="${post.image_url}"
+                   class="w-full rounded-lg mb-3 max-h-96 object-contain border border-gray-200">
+            ` : ''}
+
+            ${post.video_url ? `
+              <video controls class="w-full rounded-lg mb-3 max-h-96 border border-gray-200">
+                <source src="${post.video_url}" type="video/mp4">
+                Browser tidak mendukung video.
+              </video>
+            ` : ''}
+
+            ${post.pdf_url ? `
+              <a href="${post.pdf_url}" target="_blank" class="text-catylac-blue hover:underline flex items-center">
+                <i class="fas fa-file-pdf mr-2"></i> Lihat Dokumen PDF
+              </a>
+            ` : ''}
+          </div>
+
+          <div class="flex justify-between text-sm text-gray-500 border-t border-b border-gray-100 py-2 my-2">
+            <button onclick="likePost('${post.id}')"
+                    class="flex items-center ${isLiked ? 'text-catylac-blue' : ''}">
+              <i class="fas fa-thumbs-up mr-1"></i>
+              <span id="likeCount-${post.id}">${post.likes_count || 0}</span>
+            </button>
+            <button onclick="toggleComments('${post.id}')" class="flex items-center">
+              <i class="fas fa-comment mr-1"></i>
+              ${commentsCount}
+            </button>
+            <button onclick="sharePost('${post.id}')" class="flex items-center">
+              <i class="fas fa-share mr-1"></i> Share
+            </button>
+          </div>
+
+          <div id="comments-${post.id}" class="hidden mt-3">
+            <div class="flex mb-3">
+              <input type="text" id="commentInput-${post.id}"
+                     placeholder="Tulis komentar..."
+                     class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2">
+              <button onclick="addComment('${post.id}')"
+                      class="bg-catylac-blue text-white px-3 py-2 rounded-r-lg">
+                Kirim
+              </button>
+            </div>
+            <div id="commentList-${post.id}" class="space-y-2">
+              ${post.comments ? renderComments(post.comments) : ''}
+            </div>
+          </div>
+
+          <div id="editForm-${post.id}" class="hidden mt-4">
+            <textarea id="editContent-${post.id}"
+                      class="edit-form-textarea">${post.content}</textarea>
+
+            <div class="flex justify-end space-x-2">
+              <button onclick="cancelEditPost('${post.id}')"
+                      class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg">
+                Batal
+              </button>
+              <button onclick="saveEditedPost('${post.id}')"
+                      class="px-3 py-1 bg-catylac-blue text-white rounded-lg">
+                Simpan
+              </button>
+            </div>
+          </div>
+        `;
+
+        postFeed.appendChild(postEl);
+
+        // Initialize dropdown menu
+        if (isAuthor) {
+          const dropdownBtn = postEl.querySelector('.dropdown button');
+          const dropdownMenu = postEl.querySelector('.dropdown-menu');
+
+          dropdownBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('hidden');
+          });
+
+          // Close dropdown when clicking outside
+          document.addEventListener('click', () => {
+            dropdownMenu.classList.add('hidden');
+          });
+        }
+      });
+    }
+
+    function renderComments(comments) {
+      // Supabase stores comments as JSONB, so `comments` will be an object.
+      // Convert it to an array for sorting and rendering.
+      const commentsArray = Object.values(comments); // Get array of comment objects
+      return commentsArray
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+        .map((comment, index) => { // Use index as a fallback ID if needed
+          return `
+            <div class="flex items-start" id="comment-${comment.id || index}">
+              <img src="https://i.pravatar.cc/30?u=${comment.author}"
+                   class="w-6 h-6 rounded-full mr-2 mt-1">
+              <div class="bg-gray-100 rounded-lg px-3 py-2 flex-1">
+                <p class="font-medium text-sm">${comment.author_name || comment.author.split('@')[0]}</p>
+                <p class="text-gray-700 text-sm">${comment.text}</p>
+                <p class="text-gray-500 text-xs">${formatRelativeTime(new Date(comment.created_at).getTime())}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+    }
+
+    async function likePost(postId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        showNotification('Anda harus login untuk like posting', 'red');
+        return;
+      }
+
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+
+      // Use a sanitized user ID/email for the likes_by object key
+      const userKey = user.email.replace(/[^a-zA-Z0-9]/g, '');
+      let updatedLikesBy = post.likes_by || {};
+      let newLikesCount = post.likes_count || 0;
+
+      if (updatedLikesBy[userKey]) {
+        // Unlike
+        delete updatedLikesBy[userKey];
+        newLikesCount = Math.max(0, newLikesCount - 1);
+      } else {
+        // Like
+        updatedLikesBy[userKey] = true;
+        newLikesCount += 1;
+      }
+
+      try {
+        const { error } = await supabase
+          .from('posts')
+          .update({
+            likes_count: newLikesCount,
+            likes_by: updatedLikesBy
+          })
+          .eq('id', postId);
+
+        if (error) throw error;
+
+        // Update local state and UI
+        post.likes_count = newLikesCount;
+        post.likes_by = updatedLikesBy;
+        document.getElementById(`likeCount-${postId}`).textContent = newLikesCount;
+        const likeButton = document.querySelector(`#post-${postId} button[onclick="likePost('${postId}')"]`);
+        if (likeButton) {
+          if (updatedLikesBy[userKey]) {
+            likeButton.classList.add('text-catylac-blue');
+          } else {
+            likeButton.classList.remove('text-catylac-blue');
+          }
+        }
+      } catch (error) {
+        console.error("Like error:", error);
+        showNotification('Gagal melakukan like', 'red');
+      }
+    }
+
+    async function addComment(postId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        showNotification('Anda harus login untuk berkomentar', 'red');
+        return;
+      }
+
+      const commentInput = document.getElementById(`commentInput-${postId}`);
+      const commentText = commentInput.value.trim();
+      if (!commentText) return;
+
+      const newComment = {
+        author: user.email,
+        author_name: currentUserData.displayName,
+        text: commentText,
+        created_at: new Date().toISOString()
+      };
+
+      try {
+        // Get the current post to update its comments JSONB
+        const { data: currentPost, error: fetchError } = await supabase
+          .from('posts')
+          .select('comments')
+          .eq('id', postId)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        let existingComments = currentPost.comments || {};
+        // Generate a simple unique ID for the new comment within the JSONB object
+        const commentId = `c${Date.now()}`;
+        existingComments[commentId] = newComment;
+
+        const { error: updateError } = await supabase
+          .from('posts')
+          .update({ comments: existingComments })
+          .eq('id', postId);
+
+        if (updateError) throw updateError;
+
+        commentInput.value = '';
+        // Reload dashboard to refresh comments
+        loadDashboard();
+        // Optional: show comments section after adding a comment
+        document.getElementById(`comments-${postId}`).classList.remove('hidden');
+
+      } catch (error) {
+        console.error("Comment error:", error);
+        showNotification('Gagal menambahkan komentar', 'red');
+      }
+    }
+
+    function toggleComments(postId) {
+      const commentsSection = document.getElementById(`comments-${postId}`);
+      commentsSection.classList.toggle('hidden');
+    }
+
+    async function sharePost(postId) {
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: `Posting dari ${post.author_name}`,
+            text: post.content,
+            url: `${window.location.origin}${window.location.pathname}?post=${postId}`
+          });
+        } else {
+          // Fallback untuk browser yang tidak support Web Share API
+          const shareUrl = `${window.location.origin}${window.location.pathname}?post=${postId}`;
+          await navigator.clipboard.writeText(shareUrl);
+          showNotification('Link posting telah disalin ke clipboard', 'green');
+        }
+      } catch (error) {
+        console.error("Share error:", error);
+        if (error.name !== 'AbortError') { // AbortError means user canceled the share dialog
+          showNotification('Gagal membagikan posting', 'red');
+        }
+      }
+    }
+
+    // Fungsi untuk membuka form edit
+    function openEditPost(postId) {
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+
+      document.getElementById(`postContent-${postId}`).classList.add('hidden');
+      document.getElementById(`editForm-${postId}`).classList.remove('hidden');
+      document.getElementById(`editContent-${postId}`).value = post.content;
+    }
+
+    // Fungsi untuk membatalkan edit
+    function cancelEditPost(postId) {
+      document.getElementById(`postContent-${postId}`).classList.remove('hidden');
+      document.getElementById(`editForm-${postId}`).classList.add('hidden');
+    }
+
+    // Fungsi untuk menyimpan perubahan
+    async function saveEditedPost(postId) {
+      const newContent = document.getElementById(`editContent-${postId}`).value.trim();
+      if (!newContent) {
+        showNotification('Konten tidak boleh kosong', 'red');
+        return;
+      }
+
+      showLoading();
+      try {
+        const { error } = await supabase
+          .from('posts')
+          .update({ content: newContent })
+          .eq('id', postId);
+
+        if (error) throw error;
+
+        // Update local data
+        const postIndex = posts.findIndex(p => p.id === postId);
+        if (postIndex !== -1) {
+          posts[postIndex].content = newContent;
+        }
+
+        document.getElementById(`postContent-${postId}`).classList.remove('hidden');
+        document.getElementById(`editForm-${postId}`).classList.add('hidden');
+
+        // Update the displayed content
+        const postContentEl = document.querySelector(`#postContent-${postId} p`);
+        if (postContentEl) {
+          postContentEl.textContent = newContent;
+        }
+
+        showNotification('Posting berhasil diperbarui', 'green');
+      } catch (error) {
+        console.error("Edit post error:", error);
+        showNotification('Gagal memperbarui posting', 'red');
+      } finally {
+        hideLoading();
+      }
+    }
+
+
+    // ==================== TRANSACTIONS ====================
+    document.getElementById('formKas').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const tgl = document.getElementById('tgl').value;
+      const ket = document.getElementById('ket').value;
+      const tipe = document.getElementById('tipe').value;
+      const jml = Number(document.getElementById('jml').value);
+      const editId = document.getElementById('editTransaksiId').value;
+
+      if (!tgl || !ket || !tipe || !jml || jml <= 0) {
+        showNotification('Harap isi semua field dengan benar', 'red');
+        return;
+      }
+
+      const transaction = {
+        tgl: tgl,
+        ket: ket,
+        tipe: tipe,
+        jml: jml
+      };
+
+      showLoading();
+
+      try {
+        if (editId) {
+          // Update transaksi
+          const { error } = await supabase
+            .from('transactions')
+            .update(transaction)
+            .eq('id', editId);
+
+          if (error) throw error;
+          showNotification('Transaksi berhasil diupdate', 'green');
+        } else {
+          // Tambah transaksi baru
+          const { error } = await supabase
+            .from('transactions')
+            .insert(transaction);
+
+          if (error) throw error;
+          showNotification('Transaksi berhasil ditambahkan', 'green');
+        }
+
+        resetFormTransaksi();
+        loadTransactions();
+        loadDashboard(); // Refresh dashboard totals and chart
+      } catch (error) {
+        console.error("Transaction error:", error);
+        showNotification('Gagal menyimpan transaksi', 'red');
+      } finally {
+        hideLoading();
+      }
+    });
+
+    async function loadTransactions() {
+      showLoading();
+
+      try {
+        const { data, error } = await supabase
+          .from('transactions')
+          .select('*')
+          .order('tgl', { ascending: false });
+
+        if (error) throw error;
+
+        transactions = data;
+        updateTransactionsTable();
+      } catch (error) {
+        console.error("Load transactions error:", error);
+        showNotification('Gagal memuat transaksi', 'red');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function updateTransactionsTable() {
+      const logBody = document.getElementById('logBody');
+      logBody.innerHTML = '';
+      const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+      transactions.forEach(t => {
+        const row = logBody.insertRow();
+        row.innerHTML = `
+          <td class="p-3 border-b border-gray-200">${formatDateShort(t.tgl)}</td>
+          <td class="p-3 border-b border-gray-200">${t.ket}</td>
+          <td class="p-3 border-b border-gray-200 ${t.tipe === 'Masuk' ? 'text-green-600' : 'text-red-600'}">${t.tipe}</td>
+          <td class="p-3 border-b border-gray-200 text-right">${formatRupiah(t.jml)}</td>
+          <td class="p-3 border-b border-gray-200 text-center">
+            ${isAdmin ? `
+              <button onclick="editTransaksi('${t.id}')" class="text-catylac-peach hover:text-catylac-coral mr-2">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="hapusTransaksi('${t.id}')" class="text-catylac-coral hover:text-red-500">
+                <i class="fas fa-trash"></i>
+              </button>
+            ` : ''}
+          </td>
+        `;
+      });
+    }
+
+    function editTransaksi(id) {
+      if (localStorage.getItem('isAdmin') !== 'true') {
+        showNotification('Hanya admin yang dapat mengedit', 'red');
+        return;
+      }
+
+      const transaction = transactions.find(t => t.id === id);
+      if (!transaction) return;
+
+      document.getElementById('tgl').value = transaction.tgl;
+      document.getElementById('ket').value = transaction.ket;
+      document.getElementById('tipe').value = transaction.tipe;
+      document.getElementById('jml').value = transaction.jml;
+      document.getElementById('editTransaksiId').value = id;
+
+      document.getElementById('submitTransaksi').textContent = 'Update';
+      document.getElementById('cancelEditTransaksi').classList.remove('hidden');
+
+      document.getElementById('admin').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetFormTransaksi() {
+      document.getElementById('formKas').reset();
+      document.getElementById('editTransaksiId').value = '';
+      document.getElementById('submitTransaksi').textContent = 'Simpan';
+      document.getElementById('cancelEditTransaksi').classList.add('hidden');
+    }
+
+    async function hapusTransaksi(id) {
+      if (localStorage.getItem('isAdmin') !== 'true') {
+        showNotification('Hanya admin yang dapat menghapus', 'red');
+        return;
+      }
+
+      if (!confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) return;
+
+      showLoading();
+      try {
+        const { error } = await supabase
+          .from('transactions')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+
+        showNotification('Transaksi dihapus', 'green');
+        loadTransactions();
+        loadDashboard(); // Refresh dashboard totals and chart
+      } catch (error) {
+        console.error("Delete transaction error:", error);
+        showNotification('Gagal menghapus transaksi', 'red');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // ==================== AGENDAS ====================
+    document.getElementById('formAgenda').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const text = document.getElementById('agendaText').value.trim();
+      const date = document.getElementById('agendaDate').value;
+      const agendaImgFile = document.getElementById('agendaImg').files[0];
+      const editId = document.getElementById('editAgendaId').value;
+
+      if (!text || !date) {
+        showNotification('Harap isi agenda dan tanggal', 'red');
+        return;
+      }
+
+      let imageUrl = document.getElementById('currentImage').src; // Retain current image if not new one
+
+      showLoading();
+
+      if (agendaImgFile) {
+        try {
+          const fileName = `${Date.now()}_${agendaImgFile.name}`;
+          const filePath = `agendas/${fileName}`; // Store agenda images in a separate folder
+          const { error: uploadError, data: uploadData } = await supabase.storage
+            .from('agendas') // Assuming you have a bucket named 'agendas'
+            .upload(filePath, agendaImgFile);
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = supabase.storage.from('agendas').getPublicUrl(filePath);
+          imageUrl = publicUrl;
+        } catch (error) {
+          console.error("Image upload error:", error);
+          showNotification('Gagal mengunggah gambar agenda', 'red');
+          hideLoading();
+          return;
+        }
+      } else if (editId && !document.getElementById('currentImageContainer').classList.contains('hidden') && !imageUrl) {
+        // If image was removed during edit, clear imageUrl
+        imageUrl = null;
+      }
+
+
+      const agenda = {
+        text: text,
+        date: date,
+        image_url: imageUrl // Store the image URL
+      };
+
+      try {
+        if (editId) {
+          // Update agenda
+          const { error } = await supabase
+            .from('agendas')
+            .update(agenda)
+            .eq('id', editId);
+
+          if (error) throw error;
+          showNotification('Agenda berhasil diupdate', 'green');
+        } else {
+          // Tambah agenda baru
+          const { error } = await supabase
+            .from('agendas')
+            .insert(agenda);
+
+          if (error) throw error;
+          showNotification('Agenda berhasil ditambahkan', 'green');
+        }
+
+        resetFormAgenda();
+        loadAgendas();
+      } catch (error) {
+        console.error("Agenda error:", error);
+        showNotification('Gagal menyimpan agenda', 'red');
+      } finally {
+        hideLoading();
+      }
+    });
+
+    async function loadAgendas() {
+      showLoading();
+
+      try {
+        const { data, error } = await supabase
+          .from('agendas')
+          .select('*')
+          .order('date', { ascending: true });
+
+        if (error) throw error;
+
+        agendas = data;
+        renderAgendas();
+      } catch (error) {
+        console.error("Load agendas error:", error);
+        showNotification('Gagal memuat agenda', 'red');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function renderAgendas() {
+      const agendaList = document.getElementById('agendaList');
+      agendaList.innerHTML = '';
+      const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+      agendas.forEach(agenda => {
+        const agendaEl = document.createElement('div');
+        agendaEl.className = 'bg-white rounded-lg shadow p-4';
+
+        agendaEl.innerHTML = `
+          <div class="flex justify-between">
+            <div>
+              <h3 class="font-bold text-lg text-catylac-blue">${agenda.text}</h3>
+              <p class="text-sm text-gray-500">${formatDate(agenda.date)}</p>
+              ${agenda.image_url ? `<img src="${agenda.image_url}" class="mt-2 max-h-40 object-contain rounded">` : ''}
+            </div>
+            ${isAdmin ? `
+              <div>
+                <button onclick="editAgenda('${agenda.id}')" class="text-catylac-peach hover:text-catylac-coral mr-2">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="hapusAgenda('${agenda.id}')" class="text-catylac-coral hover:text-red-500">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+
+        agendaList.appendChild(agendaEl);
+      });
+    }
+
+    function editAgenda(id) {
+      if (localStorage.getItem('isAdmin') !== 'true') {
+        showNotification('Hanya admin yang dapat mengedit', 'red');
+        return;
+      }
+
+      const agenda = agendas.find(a => a.id === id);
+      if (!agenda) return;
+
+      document.getElementById('agendaText').value = agenda.text;
+      document.getElementById('agendaDate').value = agenda.date;
+      document.getElementById('editAgendaId').value = id;
+
+      if (agenda.image_url) {
+        document.getElementById('currentImageContainer').classList.remove('hidden');
+        document.getElementById('currentImage').src = agenda.image_url;
+      } else {
+        document.getElementById('currentImageContainer').classList.add('hidden');
+        document.getElementById('currentImage').src = '';
+      }
+
+      document.getElementById('submitAgenda').textContent = 'Update';
+      document.getElementById('cancelEditAgenda').classList.remove('hidden');
+      document.getElementById('admin').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function hapusAgenda(id) {
+      if (localStorage.getItem('isAdmin') !== 'true') {
+        showNotification('Hanya admin yang dapat menghapus', 'red');
+        return;
+      }
+
+      if (!confirm('Apakah Anda yakin ingin menghapus agenda ini?')) return;
+
+      showLoading();
+      try {
+        const agendaToDelete = agendas.find(a => a.id === id);
+
+        // Delete image from storage if it exists
+        if (agendaToDelete.image_url) {
+          const pathSegments = agendaToDelete.image_url.split('/');
+          const filePathInBucket = pathSegments.slice(pathSegments.indexOf('agendas') + 1).join('/');
+          const { error: deleteImageError } = await supabase.storage.from('agendas').remove([filePathInBucket]);
+          if (deleteImageError) console.error("Error deleting agenda image from storage:", deleteImageError);
+        }
+
+        // Delete agenda from database
+        const { error } = await supabase
+          .from('agendas')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+
+        showNotification('Agenda dihapus', 'green');
+        loadAgendas();
+      } catch (error) {
+        console.error("Delete agenda error:", error);
+        showNotification('Gagal menghapus agenda', 'red');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function removeAgendaImage() {
+      document.getElementById('currentImageContainer').classList.add('hidden');
+      document.getElementById('currentImage').src = ''; // Clear the image source
+      // In the save logic, you'd check if currentImage.src is empty to set image_url to null
+    }
+
+
+    function cancelEditAgenda() {
+      resetFormAgenda();
+    }
+
+    function resetFormAgenda() {
+      document.getElementById('formAgenda').reset();
+      document.getElementById('editAgendaId').value = '';
+      document.getElementById('submitAgenda').textContent = 'Simpan';
+      document.getElementById('cancelEditAgenda').classList.add('hidden');
+      document.getElementById('currentImageContainer').classList.add('hidden');
+      document.getElementById('currentImage').src = '';
+      document.getElementById('agendaImg').value = ''; // Clear file input
+    }
+
+    // ==================== UTILITY FUNCTIONS ====================
+    function formatRupiah(amount) {
+      return 'Rp ' + amount.toLocaleString('id-ID');
+    }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      });
+    }
+
+    function formatDateShort(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+
+    function formatRelativeTime(timestamp) {
+      const now = Date.now();
+      const diff = now - timestamp;
+      const minute = 60 * 1000;
+      const hour = 60 * minute;
+      const day = 24 * hour;
+
+      if (diff < minute) return 'Baru saja';
+      if (diff < hour) return `${Math.floor(diff / minute)} menit yang lalu`;
+      if (diff < day) return `${Math.floor(diff / hour)} jam yang lalu`;
+      if (diff < 7 * day) return `${Math.floor(diff / day)} hari yang lalu`;
+      return new Date(timestamp).toLocaleDateString('id-ID');
+    }
+
+    function showNotification(message, type) {
+      const notif = document.createElement('div');
+      notif.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg text-white ${
+        type === 'green' ? 'bg-green-500' :
+        type === 'red' ? 'bg-red-500' : 'bg-blue-500'
+      } z-50`;
+      notif.textContent = message;
+      document.body.appendChild(notif);
+
+      setTimeout(() => notif.remove(), 3000);
+    }
+
+    function showLoading() {
+      document.getElementById('loading').classList.remove('hidden');
+    }
+
+    function hideLoading() {
+      document.getElementById('loading').classList.add('hidden');
+    }
+
+    function exportToPDF() {
+      alert('Fitur export PDF akan diimplementasikan');
+    }
+
+
+    // ==================== INITIALIZATION ====================
+    function loadInitialData() {
+      loadDashboard();
+      // Any other initial data loading for other sections
+    }
+
+    // Pantau perubahan status auth
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const user = session.user;
+        currentUserData = {
+          email: user.email,
+          displayName: user.user_metadata?.full_name || user.email.split('@')[0],
+          photoURL: user.user_metadata?.avatar_url || `https://i.pravatar.cc/40?u=${user.email}`
+        };
+
+        // Update avatar
+        document.getElementById('currentUserAvatar').src = currentUserData.photoURL;
+
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('appContainer').classList.remove('hidden');
+
+        // Cek jika user adalah admin
+        if (user.email === 'radiansyahhanif@gmail.com') { // Ganti dengan email admin Anda
+          localStorage.setItem('isAdmin', 'true');
+          document.getElementById('adminNav').classList.remove('hidden');
+        } else {
+          localStorage.setItem('isAdmin', 'false');
+          document.getElementById('adminNav').classList.add('hidden');
+        }
+
+        loadInitialData();
+      } else {
+        document.getElementById('appContainer').classList.add('hidden');
+        document.getElementById('loginSection').style.display = 'flex';
+        // Clear currentUserData on logout
+        currentUserData = null;
+      }
+    });
+
+    // Initial check for session on page load
+    async function checkSession() {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (session) {
+        // Session exists, onAuthStateChange will handle UI
+      } else {
+        // No session, show login
+        document.getElementById('appContainer').classList.add('hidden');
+        document.getElementById('loginSection').style.display = 'flex';
+      }
+    }
+
+    checkSession(); // Call on page load
+  </script>
 </body>
 </html>
