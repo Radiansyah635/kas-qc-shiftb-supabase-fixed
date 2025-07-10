@@ -4,767 +4,787 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kas QC Shift B</title>
-
-  <!-- Font Awesome untuk ikon -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Google Fonts: Poppins untuk tipografi yang bersih -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <style>
-    /* Custom CSS untuk efek dan kelas yang tidak ada di Tailwind secara langsung */
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f0f2f5; /* Warna latar belakang yang lebih lembut */
-    }
-
-    /* Animasi mengambang untuk logo QC */
-    .float-animation {
-      animation: float 4s ease-in-out infinite;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    /* Animasi fade-in untuk transisi bagian */
-    .fade-in {
-      animation: fadeIn 0.5s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Gaya untuk sidebar */
-    .sidebar {
-      background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(245,245,245,0.9) 100%);
-      backdrop-filter: blur(10px);
-      border-right: 1px solid rgba(0,0,0,0.05); /* Sedikit garis pemisah */
-    }
-
-    /* Gaya item navigasi */
-    .nav-item {
-      @apply block px-4 py-3 rounded-xl transition-all duration-200 flex items-center text-gray-700;
-    }
-
-    .nav-item:hover {
-      @apply bg-catylac-mint/40 text-catylac-blue shadow-sm;
-    }
-
-    .nav-item.active {
-      @apply bg-catylac-blue text-white shadow-md;
-    }
-
-    .nav-item.active:hover {
-      @apply bg-catylac-blue/90;
-    }
-
-    /* Gaya kartu dashboard */
-    .dashboard-card {
-      @apply rounded-3xl p-6 text-white shadow-xl transform transition-transform duration-200 hover:scale-105;
-    }
-
-    /* Gaya input form */
-    .app-input {
-      @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-catylac-blue focus:ring-2 focus:ring-catylac-blue/20 transition-all duration-200;
-    }
-
-    /* Gaya tombol submit/aksi */
-    .app-btn {
-      @apply px-6 py-3 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 shadow-md;
-    }
-
-    /* Gaya tabel admin */
-    .admin-table {
-      @apply w-full table-auto text-sm bg-white rounded-xl overflow-hidden shadow-lg;
-    }
-
-    .admin-table th {
-      @apply p-4 text-left bg-catylac-blue text-white font-semibold uppercase tracking-wider;
-    }
-
-    .admin-table td {
-      @apply p-4 border-b border-gray-100 text-gray-700;
-    }
-
-    .admin-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    .admin-table tbody tr:hover {
-      @apply bg-gray-50;
-    }
-
-    /* Dropdown menu */
-    .dropdown-menu {
-      @apply absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1 z-10 border border-gray-100;
-    }
-
-    .dropdown-menu button {
-      @apply block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left;
-    }
-
-    /* Modal untuk notifikasi/konfirmasi */
-    .modal-overlay {
-      @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
-    }
-    .modal-content {
-      @apply bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full text-center;
-    }
-
-    /* Preview media */
-    .media-preview-img, .media-preview-video {
-      @apply max-h-64 w-full object-contain rounded-lg border border-gray-200;
-    }
-  </style>
-</head>
-<body class="min-h-screen flex flex-col">
-
-  <!-- Loading Indicator -->
-  <div id="loading" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-    <div class="w-16 h-16 border-4 border-catylac-blue border-t-transparent rounded-full animate-spin"></div>
-  </div>
-
-  <!-- Modal Notifikasi (pengganti alert/confirm) -->
-  <div id="notificationModal" class="modal-overlay hidden">
-    <div class="modal-content">
-      <p id="notificationMessage" class="text-lg font-medium mb-4"></p>
-      <div id="notificationActions" class="flex justify-center space-x-4">
-        <button id="notificationConfirmBtn" class="app-btn bg-catylac-blue hidden">Ya</button>
-        <button id="notificationCancelBtn" class="app-btn bg-gray-400 hover:bg-gray-500 hidden">Batal</button>
-        <button id="notificationOkBtn" class="app-btn bg-catylac-blue">OK</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Login Section -->
-  <section id="loginSection" class="min-h-screen flex flex-col justify-center items-center p-4 bg-gradient-to-br from-catylac-mint to-catylac-lavender">
-    <div class="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden w-full max-w-md fade-in p-8 sm:p-12">
-      <div class="text-center mb-10">
-        <h1 class="text-5xl font-bold text-catylac-peach mb-3">Kas QC</h1>
-        <p class="text-catylac-blue text-lg">Manajemen Keuangan Tim Shift B</p>
-      </div>
-
-      <form id="loginForm" class="space-y-6">
-        <div>
-          <label for="emailInput" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-          <input type="email" id="emailInput" required class="app-input" placeholder="email@example.com">
-        </div>
-
-        <div>
-          <label for="passwordInput" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-          <input type="password" id="passwordInput" required class="app-input" placeholder="********">
-        </div>
-
-        <button type="submit" class="w-full app-btn bg-catylac-peach hover:bg-catylac-coral">
-          Masuk
-        </button>
-      </form>
-    </div>
-  </section>
-
-  <!-- Main App (Hidden by default) -->
-  <div id="appContainer" class="hidden min-h-screen flex flex-col lg:flex-row">
-    <!-- Sidebar -->
-    <div class="sidebar w-full lg:w-64 p-6 flex flex-col shadow-lg lg:shadow-none">
-      <div class="text-center mb-8">
-        <div class="w-28 h-28 mx-auto rounded-full bg-catylac-peach flex items-center justify-center text-white text-5xl font-bold mb-4 float-animation shadow-lg">
-          QC
-        </div>
-        <h2 class="font-bold text-catylac-blue text-xl">Tim QC Shift B</h2>
-      </div>
-
-      <nav class="flex-1 px-2 space-y-3">
-        <a href="#" onclick="showSection('dashboard', event)" class="nav-item active"><i class="fas fa-home mr-3 text-lg"></i> Dashboard</a>
-        <a href="#" onclick="showSection('agenda', event)" class="nav-item"><i class="fas fa-calendar-alt mr-3 text-lg"></i> Agenda</a>
-        <a href="#" onclick="showSection('team', event)" class="nav-item"><i class="fas fa-users mr-3 text-lg"></i> Team</a>
-        <a href="#" onclick="showSection('admin', event)" id="adminNav" class="nav-item hidden"><i class="fas fa-lock mr-3 text-lg"></i> Admin</a>
-        <a href="#" onclick="showSection('whitepaper', event)" class="nav-item"><i class="fas fa-file-alt mr-3 text-lg"></i> White Paper</a>
-      </nav>
-
-      <div class="p-4 mt-auto">
-        <button onclick="logout()" class="w-full app-btn bg-catylac-coral hover:bg-catylac-peach">
-          <i class="fas fa-sign-out-alt mr-2"></i> Logout
-        </button>
-      </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="flex-1 overflow-y-auto p-6 sm:p-8 bg-gray-50">
-      <!-- Dashboard Section -->
-      <section id="dashboard" class="fade-in">
-        <h1 class="text-3xl font-bold text-catylac-blue mb-8">Dashboard Kas</h1>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <!-- Card Total Kas -->
-          <div class="dashboard-card bg-gradient-to-br from-catylac-blue to-catylac-lavender">
-            <h3 class="text-lg font-medium opacity-90">Total Kas</h3>
-            <p id="totalKas" class="text-3xl font-bold mt-2">Rp 0</p>
-          </div>
-
-          <!-- Card Kas Masuk -->
-          <div class="dashboard-card bg-gradient-to-br from-catylac-mint to-catylac-blue">
-            <h3 class="text-lg font-medium opacity-90">Kas Masuk</h3>
-            <p id="kasMasuk" class="text-3xl font-bold mt-2">Rp 0</p>
-          </div>
-
-          <!-- Card Kas Keluar -->
-          <div class="dashboard-card bg-gradient-to-br from-catylac-peach to-catylac-coral">
-            <h3 class="text-lg font-medium opacity-90">Kas Keluar</h3>
-            <p id="kasKeluar" class="text-3xl font-bold mt-2">Rp 0</p>
-          </div>
-        </div>
-
-        <!-- Grafik -->
-        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <h2 class="text-xl font-bold text-catylac-blue mb-4">Grafik Kas Bulan Ini</h2>
-          <canvas id="kasChart" class="w-full h-64"></canvas>
-        </div>
-
-        <!-- Fitur Sosial -->
-        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <h2 class="text-xl font-bold text-catylac-blue mb-6">Social Feed</h2>
-          <div class="flex items-start mb-4">
-            <img id="currentUserAvatar" src="https://i.pravatar.cc/40" class="w-12 h-12 rounded-full mr-4 border-2 border-catylac-blue p-0.5">
-            <textarea id="postContent" class="flex-1 app-input h-24 resize-y" placeholder="Apa yang ingin Anda sampaikan?"></textarea>
-          </div>
-
-          <!-- Media Preview -->
-          <div id="mediaPreview" class="mb-4 flex flex-wrap gap-4"></div>
-          <input type="file" id="mediaInput" class="hidden" accept="image/*,video/*,application/pdf">
-
-          <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-            <div class="flex flex-wrap gap-3">
-              <button onclick="openMediaPicker('image')" class="app-btn bg-catylac-blue/80 hover:bg-catylac-blue text-sm px-4 py-2">
-                <i class="fas fa-image mr-2"></i> Foto
-              </button>
-              <button onclick="openMediaPicker('video')" class="app-btn bg-catylac-peach/80 hover:bg-catylac-peach text-sm px-4 py-2">
-                <i class="fas fa-video mr-2"></i> Video
-              </button>
-              <button onclick="openMediaPicker('pdf')" class="app-btn bg-catylac-coral/80 hover:bg-catylac-coral text-sm px-4 py-2">
-                <i class="fas fa-file-pdf mr-2"></i> PDF
-              </button>
-            </div>
-            <button onclick="createPost()" class="app-btn bg-catylac-peach hover:bg-catylac-coral w-full sm:w-auto">
-              Posting
-            </button>
-          </div>
-
-          <!-- Feed Postingan -->
-          <div id="postFeed" class="space-y-6">
-            <!-- Postingan akan dimuat di sini -->
-          </div>
-        </div>
-      </section>
-
-      <!-- Agenda Section -->
-      <section id="agenda" class="hidden fade-in">
-        <h1 class="text-3xl font-bold text-catylac-blue mb-8">Agenda Meeting</h1>
-        <div id="agendaList" class="space-y-6">
-          <!-- Agenda akan dimuat di sini -->
-        </div>
-      </section>
-
-      <!-- Team Section -->
-      <section id="team" class="hidden fade-in">
-        <h1 class="text-3xl font-bold text-catylac-blue mb-8 text-center">Tim QC Shift B</h1>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow text-center">
-            <img src="https://i.pravatar.cc/150?u=ramdhani" class="mx-auto rounded-full w-32 h-32 object-cover mb-4 border-4 border-catylac-mint p-0.5">
-            <p class="font-bold text-xl text-gray-800">Ramdhani</p>
-            <p class="text-md text-catylac-blue">Koordinator</p>
-          </div>
-          <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow text-center">
-            <img src="https://i.pravatar.cc/150?u=farhan" class="mx-auto rounded-full w-32 h-32 object-cover mb-4 border-4 border-catylac-mint p-0.5">
-            <p class="font-bold text-xl text-gray-800">Farhan Nasution</p>
-            <p class="text-md text-catylac-blue">Anggota</p>
-          </div>
-          <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow text-center">
-            <img src="https://i.pravatar.cc/150?u=wisnu" class="mx-auto rounded-full w-32 h-32 object-cover mb-4 border-4 border-catylac-mint p-0.5">
-            <p class="font-bold text-xl text-gray-800">Wisnu Putro</p>
-            <p class="text-md text-catylac-blue">Anggota</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Admin Section -->
-      <section id="admin" class="hidden fade-in">
-        <h1 class="text-3xl font-bold text-catylac-blue mb-8">Admin Panel</h1>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <!-- Form Transaksi -->
-          <div class="bg-white rounded-2xl shadow-lg p-6">
-            <h2 class="text-xl font-bold text-catylac-peach mb-4">Input Transaksi</h2>
-            <form id="formKas" class="space-y-4">
-              <input type="hidden" id="editTransaksiId">
-
-              <div>
-                <label for="tgl" class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-                <input type="date" id="tgl" class="app-input" required>
-              </div>
-
-              <div>
-                <label for="ket" class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
-                <input type="text" id="ket" placeholder="Contoh: Iuran bulanan" class="app-input" required>
-              </div>
-
-              <div>
-                <label for="tipe" class="block text-sm font-medium text-gray-700 mb-1">Jenis</label>
-                <select id="tipe" class="app-input" required>
-                  <option value="">-- Pilih --</option>
-                  <option value="Masuk">Kas Masuk</option>
-                  <option value="Keluar">Kas Keluar</option>
-                </select>
-              </div>
-
-              <div>
-                <label for="jml" class="block text-sm font-medium text-gray-700 mb-1">Jumlah (Rp)</label>
-                <input type="number" id="jml" placeholder="10000" min="1" class="app-input" required>
-              </div>
-
-              <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mt-6">
-                <button type="submit" id="submitTransaksi" class="app-btn bg-catylac-peach hover:bg-catylac-coral flex-1">
-                  Simpan
-                </button>
-                <button type="button" id="cancelEditTransaksi" onclick="cancelEditTransaksi()" class="app-btn bg-gray-400 hover:bg-gray-500 flex-1 hidden">
-                  Batal
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Form Agenda -->
-          <div class="bg-white rounded-2xl shadow-lg p-6">
-            <h2 class="text-xl font-bold text-catylac-coral mb-4">Input Agenda</h2>
-            <form id="formAgenda" class="space-y-4">
-              <input type="hidden" id="editAgendaId">
-
-              <div>
-                <label for="agendaText" class="block text-sm font-medium text-gray-700 mb-1">Agenda</label>
-                <input type="text" id="agendaText" placeholder="Contoh: Rapat evaluasi" class="app-input" required>
-              </div>
-
-              <div>
-                <label for="agendaDate" class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-                <input type="date" id="agendaDate" class="app-input" required>
-              </div>
-
-              <div>
-                <label for="agendaImg" class="block text-sm font-medium text-gray-700 mb-1">Gambar (Opsional)</label>
-                <input type="file" id="agendaImg" accept="image/*" class="app-input">
-              </div>
-
-              <div id="currentImageContainer" class="hidden border border-gray-200 rounded-lg p-3">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Gambar Saat Ini</label>
-                <img id="currentImage" class="max-w-full h-32 object-contain rounded mb-2">
-                <button type="button" onclick="removeAgendaImage()" class="text-sm text-catylac-coral hover:underline">Hapus Gambar</button>
-              </div>
-
-              <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mt-6">
-                <button type="submit" id="submitAgenda" class="app-btn bg-catylac-coral hover:bg-catylac-peach flex-1">
-                  Simpan
-                </button>
-                <button type="button" id="cancelEditAgenda" onclick="cancelEditAgenda()" class="app-btn bg-gray-400 hover:bg-gray-500 flex-1 hidden">
-                  Batal
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- Daftar Transaksi -->
-        <div class="bg-white rounded-2xl shadow-lg p-6">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <h2 class="text-xl font-bold text-catylac-blue">Daftar Transaksi</h2>
-            <button onclick="exportToPDF()" class="app-btn bg-catylac-blue hover:bg-catylac-lavender text-sm px-4 py-2">
-              <i class="fas fa-file-pdf mr-2"></i> Export PDF
-            </button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Keterangan</th>
-                  <th>Tipe</th>
-                  <th class="text-right">Jumlah</th>
-                  <th class="text-center">Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="logBody">
-                <!-- Transaksi akan dimuat di sini -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- White Paper Section -->
-      <section id="whitepaper" class="hidden fade-in">
-        <h1 class="text-3xl font-bold text-catylac-blue mb-8">White Paper</h1>
-        <div class="bg-white rounded-2xl shadow-lg p-6">
-          <p class="text-gray-700">Dokumen kebijakan dan panduan akan ditampilkan di sini.</p>
-        </div>
-      </section>
-    </div>
-  </div>        
-
-  <!-- ***** SCRIPT JAVASCRIPT ***** -->
-  <!-- Semua script JavaScript dipindahkan ke sini, di akhir body -->
-
-  <!-- Tailwind CSS CDN (untuk memastikan kelas-kelasnya tersedia saat JS dijalankan) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            'catylac-mint': '#a2e4b8',
-            'catylac-lavender': '#b5b2e2',
-            'catylac-peach': '#ffb7b2',
-            'catylac-coral': '#ff8e8e',
-            'catylac-blue': '#89c4f4',
+            'dark-void': '#0A0A0E', // Sangat gelap untuk latar belakang utama
+            'deep-space': '#1A1A2E', // Biru gelap keunguan untuk latar belakang sekunder
+            'electric-blue': '#00ADB5', // Biru terang-cyan untuk aksen utama/tombol
+            'cyber-purple': '#BB86FC', // Ungu terang untuk aksen sekunder
+            'neon-green': '#00F5D4', // Hijau neon untuk highlight/sukses
+            'light-ghost': '#EEEEEE', // Abu-abu terang untuk teks/konten
+            'warm-red': '#CF6679', // Merah untuk error/peringatan
           }
         }
       }
     }
   </script>
-
-  <!-- Chart.js -->
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Supabase -->
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      @apply bg-dark-void text-light-ghost; /* Menggunakan warna baru */
+    }
+    .modal {
+      @apply bg-deep-space; /* Warna latar belakang modal */
+    }
+    .modal-content {
+      @apply bg-deep-space; /* Warna konten modal */
+    }
+    .btn-primary {
+      @apply bg-electric-blue hover:bg-opacity-80 text-dark-void; /* Tombol utama */
+    }
+    .btn-secondary {
+      @apply bg-cyber-purple hover:bg-opacity-80 text-dark-void; /* Tombol sekunder */
+    }
+    .btn-danger {
+      @apply bg-warm-red hover:bg-opacity-80 text-light-ghost; /* Tombol bahaya */
+    }
+    input, textarea, select {
+      @apply bg-deep-space border border-electric-blue/50 text-light-ghost focus:ring-electric-blue focus:border-electric-blue;
+    }
+    .header {
+      @apply bg-deep-space shadow-lg;
+    }
+    .nav-link {
+      @apply text-light-ghost hover:text-electric-blue;
+    }
+    .admin-panel-bg {
+      @apply bg-deep-space;
+    }
+    .card {
+      @apply bg-deep-space shadow-md border border-electric-blue/20;
+    }
+    .stat-card {
+      @apply bg-deep-space shadow-md border border-neon-green/20;
+    }
+    /* Menyesuaikan warna notifikasi */
+    .toast.bg-green-500 { @apply bg-neon-green text-dark-void; }
+    .toast.bg-red-500 { @apply bg-warm-red text-light-ghost; }
+    .toast.bg-blue-500 { @apply bg-electric-blue text-dark-void; }
+    
+    /* Scrollbar Styling for a futuristic look */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1A1A2E; /* deep-space */
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #00ADB5; /* electric-blue */
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #008C90; /* slightly darker electric-blue on hover */
+    }
 
-  <!-- Supabase Initialization -->
+  </style>
+</head>
+<body class="bg-dark-void text-light-ghost min-h-screen flex flex-col">
+  
+  <section id="loginSection" class="flex flex-col items-center justify-center min-h-screen p-4 bg-deep-space">
+    <div class="bg-dark-void p-8 rounded-lg shadow-xl w-full max-w-md border border-electric-blue/30">
+      <h2 class="text-3xl font-bold text-light-ghost mb-6 text-center">Login Kas QC</h2>
+      <div class="mb-4">
+        <label for="email" class="block text-light-ghost text-sm font-bold mb-2">Email</label>
+        <input type="email" id="email" class="shadow appearance-none border rounded w-full py-3 px-4 text-dark-void leading-tight focus:outline-none focus:shadow-outline bg-deep-space border-electric-blue/50 text-light-ghost" placeholder="email@example.com">
+      </div>
+      <div class="mb-6">
+        <label for="password" class="block text-light-ghost text-sm font-bold mb-2">Password</label>
+        <input type="password" id="password" class="shadow appearance-none border rounded w-full py-3 px-4 text-dark-void leading-tight focus:outline-none focus:shadow-outline bg-deep-space border-electric-blue/50 text-light-ghost" placeholder="********">
+      </div>
+      <div class="flex items-center justify-between mb-4">
+        <button id="loginButton" class="bg-electric-blue hover:bg-opacity-80 text-dark-void font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-200">
+          Login
+        </button>
+        <a href="#" id="forgotPasswordLink" class="inline-block align-baseline font-bold text-sm text-electric-blue hover:text-cyber-purple">
+          Lupa password?
+        </a>
+      </div>
+      <p class="text-center text-light-ghost text-sm">
+        Belum punya akun? <a href="#" id="registerLink" class="text-electric-blue hover:text-cyber-purple font-bold">Daftar</a>
+      </p>
+      <div id="loginMessage" class="mt-4 text-center text-sm font-semibold"></div>
+    </div>
+  </section>
+
+  <div id="registerModal" class="fixed inset-0 bg-dark-void bg-opacity-75 flex items-center justify-center hidden z-50">
+    <div class="bg-deep-space p-8 rounded-lg shadow-xl w-full max-w-md border border-electric-blue/30">
+      <h3 class="text-2xl font-bold text-light-ghost mb-6 text-center">Daftar Akun Baru</h3>
+      <div class="mb-4">
+        <label for="registerEmail" class="block text-light-ghost text-sm font-bold mb-2">Email</label>
+        <input type="email" id="registerEmail" class="shadow appearance-none border rounded w-full py-3 px-4 text-dark-void leading-tight focus:outline-none focus:shadow-outline bg-dark-void border-electric-blue/50 text-light-ghost" placeholder="email@example.com">
+      </div>
+      <div class="mb-4">
+        <label for="registerPassword" class="block text-light-ghost text-sm font-bold mb-2">Password</label>
+        <input type="password" id="registerPassword" class="shadow appearance-none border rounded w-full py-3 px-4 text-dark-void leading-tight focus:outline-none focus:shadow-outline bg-dark-void border-electric-blue/50 text-light-ghost" placeholder="********">
+      </div>
+      <div class="mb-6">
+        <label for="confirmPassword" class="block text-light-ghost text-sm font-bold mb-2">Konfirmasi Password</label>
+        <input type="password" id="confirmPassword" class="shadow appearance-none border rounded w-full py-3 px-4 text-dark-void leading-tight focus:outline-none focus:shadow-outline bg-dark-void border-electric-blue/50 text-light-ghost" placeholder="********">
+      </div>
+      <div class="flex items-center justify-between">
+        <button id="submitRegister" class="bg-electric-blue hover:bg-opacity-80 text-dark-void font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-200">
+          Daftar
+        </button>
+        <button id="closeRegisterModal" class="bg-warm-red hover:bg-opacity-80 text-light-ghost font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-200">
+          Batal
+        </button>
+      </div>
+      <div id="registerMessage" class="mt-4 text-center text-sm font-semibold"></div>
+    </div>
+  </div>
+
+  <div id="appContainer" class="hidden flex-1 flex flex-col">
+    <header class="bg-deep-space shadow-lg p-4 flex justify-between items-center z-10">
+      <h1 class="text-2xl font-bold text-light-ghost">Kas QC Shift B</h1>
+      <div class="relative dropdown">
+        <img id="currentUserAvatar" src="https://i.pravatar.cc/40?u=user@example.com" alt="User Avatar" class="w-10 h-10 rounded-full cursor-pointer border-2 border-electric-blue">
+        <div class="dropdown-menu absolute right-0 mt-2 w-48 bg-dark-void rounded-md shadow-lg py-1 hidden z-20">
+          <a href="#" id="profileLink" class="block px-4 py-2 text-sm text-light-ghost hover:bg-deep-space">Profil</a>
+          <a href="#" id="logoutButton" class="block px-4 py-2 text-sm text-warm-red hover:bg-deep-space">Logout</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 p-6 overflow-auto">
+      <nav id="adminNav" class="hidden mb-6">
+        <ul class="flex space-x-4 bg-deep-space p-4 rounded-lg shadow-md">
+          <li><a href="#" id="dashboardLink" class="nav-link text-lg font-semibold px-4 py-2 rounded-md hover:bg-electric-blue hover:text-dark-void transition duration-200">Dashboard</a></li>
+          <li><a href="#" id="dataEntryLink" class="nav-link text-lg font-semibold px-4 py-2 rounded-md hover:bg-electric-blue hover:text-dark-void transition duration-200">Input Data</a></li>
+          <li><a href="#" id="adminPanelLink" class="nav-link text-lg font-semibold px-4 py-2 rounded-md hover:bg-electric-blue hover:text-dark-void transition duration-200">Manajemen Pengguna</a></li>
+        </ul>
+      </nav>
+
+      <section id="dashboardSection" class="active-section">
+        <h2 class="text-3xl font-bold text-electric-blue mb-6">Dashboard</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div class="stat-card p-6 rounded-lg text-center">
+            <h3 class="text-xl font-semibold text-light-ghost mb-2">Total Transaksi</h3>
+            <p id="totalTransactions" class="text-4xl font-bold text-neon-green">0</p>
+          </div>
+          <div class="stat-card p-6 rounded-lg text-center">
+            <h3 class="text-xl font-semibold text-light-ghost mb-2">Pemasukan</h3>
+            <p id="totalIncome" class="text-4xl font-bold text-neon-green">Rp 0</p>
+          </div>
+          <div class="stat-card p-6 rounded-lg text-center">
+            <h3 class="text-xl font-semibold text-light-ghost mb-2">Pengeluaran</h3>
+            <p id="totalExpense" class="text-4xl font-bold text-warm-red">Rp 0</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="card p-6 rounded-lg">
+            <h3 class="text-xl font-semibold text-light-ghost mb-4">Grafik Transaksi Harian</h3>
+            <canvas id="dailyTransactionChart"></canvas>
+          </div>
+          <div class="card p-6 rounded-lg">
+            <h3 class="text-xl font-semibold text-light-ghost mb-4">Grafik Pemasukan vs Pengeluaran</h3>
+            <canvas id="incomeExpenseChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section id="dataEntrySection" class="hidden">
+        <h2 class="text-3xl font-bold text-electric-blue mb-6">Input Data Transaksi</h2>
+        <div class="card p-6 rounded-lg w-full max-w-2xl mx-auto">
+          <div class="mb-4">
+            <label for="transactionType" class="block text-light-ghost text-sm font-bold mb-2">Jenis Transaksi</label>
+            <select id="transactionType" class="shadow border rounded w-full py-3 px-4 text-dark-void leading-tight focus:outline-none focus:shadow-outline bg-deep-space border-electric-blue/50 text-light-ghost">
+              <option value="pemasukan">Pemasukan</option>
+              <option value="pengeluaran">Pengeluaran</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label for="description" class="block text-light-ghost text-sm font-bold mb-2">Deskripsi</label>
+            <textarea id="description" class="shadow appearance-none border rounded w-full py-3 px-4 text-dark-void leading-tight focus:outline-none focus:shadow-outline bg-deep-space border-electric-blue/50 text-light-ghost" placeholder="Deskripsi transaksi"></textarea>
+          </div>
+          <div class="mb-4">
+            <label for="amount" class="block text-light-ghost text-sm font-bold mb-2">Jumlah (Rp)</label>
+            <input type="number" id="amount" class="shadow appearance-none border rounded w-full py-3 px-4 text-dark-void leading-tight focus:outline-none focus:shadow-outline bg-deep-space border-electric-blue/50 text-light-ghost" placeholder="100000">
+          </div>
+          <div class="flex justify-end">
+            <button id="addTransactionButton" class="bg-electric-blue hover:bg-opacity-80 text-dark-void font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-200">
+              Tambah Transaksi
+            </button>
+          </div>
+          <div id="dataEntryMessage" class="mt-4 text-center text-sm font-semibold"></div>
+        </div>
+
+        <h3 class="text-2xl font-bold text-light-ghost mt-8 mb-4">Daftar Transaksi</h3>
+        <div class="overflow-x-auto card p-6 rounded-lg">
+          <table class="min-w-full leading-normal">
+            <thead>
+              <tr class="bg-deep-space">
+                <th class="px-5 py-3 border-b-2 border-electric-blue/30 text-left text-xs font-semibold text-light-ghost uppercase tracking-wider">
+                  Tanggal
+                </th>
+                <th class="px-5 py-3 border-b-2 border-electric-blue/30 text-left text-xs font-semibold text-light-ghost uppercase tracking-wider">
+                  Jenis
+                </th>
+                <th class="px-5 py-3 border-b-2 border-electric-blue/30 text-left text-xs font-semibold text-light-ghost uppercase tracking-wider">
+                  Deskripsi
+                </th>
+                <th class="px-5 py-3 border-b-2 border-electric-blue/30 text-left text-xs font-semibold text-light-ghost uppercase tracking-wider">
+                  Jumlah (Rp)
+                </th>
+                <th class="px-5 py-3 border-b-2 border-electric-blue/30 text-left text-xs font-semibold text-light-ghost uppercase tracking-wider">
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+            <tbody id="transactionsTableBody">
+              </tbody>
+          </table>
+          <div id="transactionsPagination" class="flex justify-center mt-4">
+            <button id="prevTransactionsPage" class="bg-deep-space text-electric-blue px-4 py-2 rounded-l-md hover:bg-electric-blue hover:text-dark-void disabled:opacity-50 disabled:cursor-not-allowed">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <span id="currentTransactionsPage" class="bg-deep-space text-light-ghost px-4 py-2">1</span>
+            <button id="nextTransactionsPage" class="bg-deep-space text-electric-blue px-4 py-2 rounded-r-md hover:bg-electric-blue hover:text-dark-void disabled:opacity-50 disabled:cursor-not-allowed">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="adminPanelSection" class="hidden admin-panel-bg p-6 rounded-lg shadow-md">
+        <h2 class="text-3xl font-bold text-electric-blue mb-6">Manajemen Pengguna</h2>
+        <div class="mb-4 flex space-x-4">
+          <input type="text" id="newAdminEmail" class="shadow appearance-none border rounded py-3 px-4 text-dark-void leading-tight focus:outline-none focus:shadow-outline bg-deep-space border-electric-blue/50 text-light-ghost flex-grow" placeholder="Email admin baru">
+          <button id="addAdminButton" class="bg-electric-blue hover:bg-opacity-80 text-dark-void font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-200">
+            Tambah Admin
+          </button>
+        </div>
+        <div id="adminMessage" class="mt-4 text-center text-sm font-semibold"></div>
+
+        <h3 class="text-2xl font-bold text-light-ghost mt-8 mb-4">Daftar Pengguna</h3>
+        <div class="overflow-x-auto card p-6 rounded-lg">
+          <table class="min-w-full leading-normal">
+            <thead>
+              <tr class="bg-deep-space">
+                <th class="px-5 py-3 border-b-2 border-electric-blue/30 text-left text-xs font-semibold text-light-ghost uppercase tracking-wider">
+                  Email
+                </th>
+                <th class="px-5 py-3 border-b-2 border-electric-blue/30 text-left text-xs font-semibold text-light-ghost uppercase tracking-wider">
+                  Role
+                </th>
+                <th class="px-5 py-3 border-b-2 border-electric-blue/30 text-left text-xs font-semibold text-light-ghost uppercase tracking-wider">
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              </tbody>
+          </table>
+          <div id="usersPagination" class="flex justify-center mt-4">
+            <button id="prevUsersPage" class="bg-deep-space text-electric-blue px-4 py-2 rounded-l-md hover:bg-electric-blue hover:text-dark-void disabled:opacity-50 disabled:cursor-not-allowed">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <span id="currentUsersPage" class="bg-deep-space text-light-ghost px-4 py-2">1</span>
+            <button id="nextUsersPage" class="bg-deep-space text-electric-blue px-4 py-2 rounded-r-md hover:bg-electric-blue hover:text-dark-void disabled:opacity-50 disabled:cursor-not-allowed">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+      
+      <div id="profileModal" class="fixed inset-0 bg-dark-void bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="bg-deep-space p-8 rounded-lg shadow-xl w-full max-w-md border border-electric-blue/30">
+          <h3 class="text-2xl font-bold text-light-ghost mb-6 text-center">Profil Pengguna</h3>
+          <div class="mb-4">
+            <label for="profileEmail" class="block text-light-ghost text-sm font-bold mb-2">Email</label>
+            <input type="email" id="profileEmail" class="shadow appearance-none border rounded w-full py-3 px-4 leading-tight focus:outline-none focus:shadow-outline bg-dark-void border-electric-blue/50 text-light-ghost" readonly>
+          </div>
+          <div class="mb-4">
+            <label for="profilePassword" class="block text-light-ghost text-sm font-bold mb-2">Password Baru</label>
+            <input type="password" id="profilePassword" class="shadow appearance-none border rounded w-full py-3 px-4 leading-tight focus:outline-none focus:shadow-outline bg-dark-void border-electric-blue/50 text-light-ghost" placeholder="Kosongkan jika tidak ingin mengubah">
+          </div>
+          <div class="flex items-center justify-between">
+            <button id="updateProfileButton" class="bg-electric-blue hover:bg-opacity-80 text-dark-void font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-200">
+              Update Profil
+            </button>
+            <button id="closeProfileModal" class="bg-warm-red hover:bg-opacity-80 text-light-ghost font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-200">
+              Tutup
+            </button>
+          </div>
+          <div id="profileMessage" class="mt-4 text-center text-sm font-semibold"></div>
+        </div>
+      </div>
+    </main>
+
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+  </div>
+
   <script>
+    // Supabase Client Initialization
     const supabaseUrl = 'https://aqlhsnkprwcxhqvizvyj.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxbGhzbmtwcndjeGhxdml6dnlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5ODkzMDksImV4cCI6MjA2NzU2NTMwOX0.OKEP8UOnhhhbl3finjKkgybFeMFz09yEW_lxWnjoFCY';
     const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
-  </script>
 
-  <!-- Logika Aplikasi Utama -->
-  <script>
-    // ==================== GLOBAL VARIABLES ====================
-    let kasChart = null;
-    let transactions = [];
-    let agendas = [];
-    let posts = [];
-    let mediaToUpload = null;
-    let currentUserData = null; // Stored user data (email, display name, photo URL)
+    let currentUserData = null;
+    let transactionsChart = null;
+    let incomeExpenseChart = null;
 
-    // ==================== UTILITY FUNCTIONS ====================
-    // Fungsi untuk menampilkan modal notifikasi/konfirmasi
-    function showNotification(message, type = 'info', onConfirm = null) {
-      const modal = document.getElementById('notificationModal');
-      const msgEl = document.getElementById('notificationMessage');
-      const okBtn = document.getElementById('notificationOkBtn');
-      const confirmBtn = document.getElementById('notificationConfirmBtn');
-      const cancelBtn = document.getElementById('notificationCancelBtn');
+    // Pagination variables
+    let currentTransactionsPage = 1;
+    const transactionsPerPage = 10;
+    let totalTransactionsCount = 0;
 
-      msgEl.textContent = message;
-      msgEl.className = `text-lg font-medium mb-4 ${
-        type === 'success' ? 'text-green-600' :
-        type === 'error' ? 'text-red-600' :
-        'text-gray-800'
-      }`;
+    let currentUsersPage = 1;
+    const usersPerPage = 10;
+    let totalUsersCount = 0;
 
-      // Reset buttons
-      okBtn.classList.add('hidden');
-      confirmBtn.classList.add('hidden');
-      cancelBtn.classList.add('hidden');
-      confirmBtn.onclick = null;
-      cancelBtn.onclick = null;
-
-      if (onConfirm) { // Ini adalah dialog konfirmasi
-        confirmBtn.classList.remove('hidden');
-        cancelBtn.classList.remove('hidden');
-        confirmBtn.onclick = () => {
-          onConfirm();
-          modal.classList.add('hidden');
-        };
-        cancelBtn.onclick = () => {
-          modal.classList.add('hidden');
-        };
-      } else { // Ini adalah notifikasi info/error/success
-        okBtn.classList.remove('hidden');
-        okBtn.onclick = () => {
-          modal.classList.add('hidden');
-        };
-        setTimeout(() => { // Auto-hide for simple notifications
-          if (!modal.classList.contains('hidden')) {
-            modal.classList.add('hidden');
-          }
-        }, 3000);
+  // Utility function for showing toasts
+    function showToast(message, type = 'success') {
+      const toastContainer = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast p-3 rounded-md shadow-lg text-sm transition-all duration-300 ease-in-out transform translate-x-full opacity-0`;
+      
+      let bgColorClass = '';
+      if (type === 'success') {
+        bgColorClass = 'bg-neon-green text-dark-void';
+      } else if (type === 'error') {
+        bgColorClass = 'bg-warm-red text-light-ghost';
+      } else if (type === 'info') {
+        bgColorClass = 'bg-electric-blue text-dark-void';
       }
-      modal.classList.remove('hidden');
+
+      toast.classList.add(bgColorClass);
+      toast.textContent = message;
+      toastContainer.appendChild(toast);
+
+      // Animate in
+      setTimeout(() => {
+        toast.classList.remove('translate-x-full', 'opacity-0');
+        toast.classList.add('translate-x-0', 'opacity-100');
+      }, 10); // Small delay to ensure transition applies
+
+      // Animate out and remove
+      setTimeout(() => {
+        toast.classList.remove('translate-x-0', 'opacity-100');
+        toast.classList.add('translate-x-full', 'opacity-0');
+        toast.addEventListener('transitionend', () => toast.remove());
+      }, 3000); // Toast disappears after 3 seconds
     }
 
-    function showLoading() {
-      document.getElementById('loading').classList.remove('hidden');
-    }
-
-    function hideLoading() {
-      document.getElementById('loading').classList.add('hidden');
-    }
-
-    function formatRupiah(amount) {
-      return 'Rp ' + (amount || 0).toLocaleString('id-ID');
-    }
-
-    function formatDate(dateString) {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('id-ID', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
+    // SECTION MANAGEMENT
+    function showSection(sectionId) {
+      document.querySelectorAll('section').forEach(section => {
+        section.classList.add('hidden');
+        section.classList.remove('active-section');
       });
+      document.getElementById(sectionId).classList.remove('hidden');
+      document.getElementById(sectionId).classList.add('active-section');
     }
 
-    function formatDateShort(dateString) {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('id-ID', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
-    }
-
-    function formatRelativeTime(timestamp) {
-      const now = Date.now();
-      const diff = now - timestamp;
-      const minute = 60 * 1000;
-      const hour = 60 * minute;
-      const day = 24 * hour;
-
-      if (diff < minute) return 'Baru saja';
-      if (diff < hour) return `${Math.floor(diff / minute)} menit yang lalu`;
-      if (diff < day) return `${Math.floor(diff / hour)} jam yang lalu`;
-      if (diff < 7 * day) return `${Math.floor(diff / day)} hari yang lalu`;
-      return new Date(timestamp).toLocaleDateString('id-ID');
-    }
-
-    // ==================== AUTHENTICATION ====================
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    // Event Listeners for Navigation
+    document.getElementById('dashboardLink').addEventListener('click', (e) => {
       e.preventDefault();
-
-      const email = document.getElementById('emailInput').value;
-      const password = document.getElementById('passwordInput').value;
-
-      showLoading();
-
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: email,
-          password: password
-        });
-
-        if (error) throw error;
-
-        // onAuthStateChange akan terpicu dan menangani update UI
-      } catch (error) {
-        hideLoading();
-        console.error("Login error:", error);
-
-        let errorMessage = 'Terjadi kesalahan saat login';
-        if (error.message.includes('Invalid login credentials')) {
-          errorMessage = 'Email atau password salah';
-        } else if (error.message.includes('Email not confirmed')) {
-          errorMessage = 'Email belum diverifikasi';
-        }
-
-        showNotification(errorMessage, 'error');
+      showSection('dashboardSection');
+      loadDashboardData();
+    });
+    document.getElementById('dataEntryLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      showSection('dataEntrySection');
+      loadTransactions();
+    });
+    document.getElementById('adminPanelLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      showSection('adminPanelSection');
+      loadUsers();
+    });
+    document.getElementById('profileLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      showProfileModal();
+    });
+    document.getElementById('logoutButton').addEventListener('click', async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        showToast('Terjadi kesalahan saat logout: ' + error.message, 'error');
+      } else {
+        localStorage.removeItem('isAdmin');
+        showToast('Berhasil logout', 'success');
+        showSection('loginSection');
       }
     });
 
-    async function logout() {
-      showNotification('Apakah Anda yakin ingin logout?', 'info', async () => {
-        showLoading();
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-          console.error("Logout error:", error);
-          showNotification('Gagal logout', 'error');
-        }
-        // onAuthStateChange akan menangani update UI setelah logout
-        hideLoading();
-      });
-    }
+    // LOGIN & REGISTER
+    document.getElementById('loginButton').addEventListener('click', async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const loginMessage = document.getElementById('loginMessage');
 
-    // ==================== NAVIGATION ====================
-    function showSection(id, event) {
-      if (event) {
-        event.preventDefault(); // Mencegah perilaku default link
-        // Update active nav item
-        document.querySelectorAll('.nav-item').forEach(item => {
-          item.classList.remove('active');
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        loginMessage.textContent = 'Email atau password salah!';
+        loginMessage.classList.add('text-warm-red');
+        showToast('Login gagal: ' + error.message, 'error');
+      } else {
+        loginMessage.textContent = '';
+        loginMessage.classList.remove('text-warm-red');
+        showToast('Login berhasil!', 'success');
+        // onAuthStateChange will handle UI update
+      }
+    });
+
+    document.getElementById('registerLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('registerModal').classList.remove('hidden');
+    });
+
+    document.getElementById('closeRegisterModal').addEventListener('click', () => {
+      document.getElementById('registerModal').classList.add('hidden');
+      document.getElementById('registerEmail').value = '';
+      document.getElementById('registerPassword').value = '';
+      document.getElementById('confirmPassword').value = '';
+      document.getElementById('registerMessage').textContent = '';
+      document.getElementById('registerMessage').classList.remove('text-warm-red', 'text-neon-green');
+    });
+
+    document.getElementById('submitRegister').addEventListener('click', async () => {
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const registerMessage = document.getElementById('registerMessage');
+
+      if (password !== confirmPassword) {
+        registerMessage.textContent = 'Password tidak cocok!';
+        registerMessage.classList.add('text-warm-red');
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: email.split('@')[0], // Default name from email
+            avatar_url: `https://i.pravatar.cc/40?u=${email}`
+          }
+        }
+      });
+
+      if (error) {
+        registerMessage.textContent = 'Pendaftaran gagal: ' + error.message;
+        registerMessage.classList.add('text-warm-red');
+        showToast('Pendaftaran gagal: ' + error.message, 'error');
+      } else {
+        registerMessage.textContent = 'Pendaftaran berhasil! Silakan cek email Anda untuk verifikasi.';
+        registerMessage.classList.add('text-neon-green');
+        showToast('Pendaftaran berhasil! Cek email untuk verifikasi.', 'success');
+        // Optional: close modal after a delay
+        setTimeout(() => {
+          document.getElementById('registerModal').classList.add('hidden');
+          document.getElementById('registerEmail').value = '';
+          document.getElementById('registerPassword').value = '';
+          document.getElementById('confirmPassword').value = '';
+          document.getElementById('registerMessage').textContent = '';
+        }, 3000);
+      }
+    });
+
+    document.getElementById('forgotPasswordLink').addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = prompt("Masukkan email Anda untuk reset password:");
+      if (email) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin, // Redirect back to your app after reset
         });
-        event.target.closest('.nav-item').classList.add('active'); // Gunakan closest untuk memastikan klik pada <a>
-      }
 
-      // Sembunyikan semua section
-      document.querySelectorAll('section').forEach(section => {
-        section.classList.add('hidden');
-        section.classList.remove('fade-in'); // Hapus kelas fade-in agar bisa di-apply lagi
-      });
-
-      // Tampilkan section yang dipilih
-      const section = document.getElementById(id);
-      if (section) {
-        section.classList.remove('hidden');
-        section.classList.add('fade-in');
-
-        // Load data jika diperlukan
-        if (id === 'dashboard') {
-          loadDashboard();
-        } else if (id === 'agenda') {
-          loadAgendas();
-        } else if (id === 'admin') {
-          loadTransactions();
-          loadAgendas(); // Load agendas for admin too
-        }
-      }
-    }
-
-    // ==================== DASHBOARD ====================
-    async function loadDashboard() {
-      showLoading();
-
-      try {
-        // Load transactions
-        const { data: transactionData, error: transactionError } = await supabase
-          .from('transactions')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (transactionError) throw transactionError;
-        transactions = transactionData;
-        updateDashboardMetrics();
-
-        // Load posts
-        const { data: postData, error: postError } = await supabase
-          .from('posts')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (postError) throw postError;
-        posts = postData;
-        renderPosts();
-      } catch (error) {
-        console.error("Load dashboard error:", error);
-        showNotification('Gagal memuat data dashboard', 'error');
-      } finally {
-        hideLoading();
-      }
-    }
-
-    function updateDashboardMetrics() {
-      // Hitung total
-      const totalMasuk = transactions
-        .filter(t => t.tipe === 'Masuk')
-        .reduce((sum, t) => sum + t.jml, 0);
-
-      const totalKeluar = transactions
-        .filter(t => t.tipe === 'Keluar')
-        .reduce((sum, t) => sum + t.jml, 0);
-
-      document.getElementById('totalKas').textContent = formatRupiah(totalMasuk - totalKeluar);
-      document.getElementById('kasMasuk').textContent = formatRupiah(totalMasuk);
-      document.getElementById('kasKeluar').textContent = formatRupiah(totalKeluar);
-
-      // Perbarui grafik
-      updateChart();
-    }
-
-    function updateChart() {
-      const ctx = document.getElementById('kasChart').getContext('2d');
-
-      if (kasChart) {
-        kasChart.destroy();
-      }
-
-      // Kelompokkan berdasarkan bulan
-      const monthlyData = {};
-      transactions.forEach(t => {
-        const date = new Date(t.tgl);
-        const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-
-        if (!monthlyData[monthYear]) {
-          monthlyData[monthYear] = { masuk: 0, keluar: 0 };
-        }
-
-        if (t.tipe === 'Masuk') {
-          monthlyData[monthYear].masuk += t.jml;
+        if (error) {
+          showToast('Gagal mengirim link reset password: ' + error.message, 'error');
         } else {
-          monthlyData[monthYear].keluar += t.jml;
+          showToast('Link reset password telah dikirim ke email Anda.', 'success');
+        }
+      }
+    });
+
+
+    // PROFILE MANAGEMENT
+    function showProfileModal() {
+      document.getElementById('profileEmail').value = currentUserData.email;
+      document.getElementById('profileModal').classList.remove('hidden');
+      document.getElementById('profilePassword').value = ''; // Clear password field
+      document.getElementById('profileMessage').textContent = '';
+      document.getElementById('profileMessage').classList.remove('text-warm-red', 'text-neon-green');
+    }
+
+    document.getElementById('closeProfileModal').addEventListener('click', () => {
+      document.getElementById('profileModal').classList.add('hidden');
+    });
+
+    document.getElementById('updateProfileButton').addEventListener('click', async () => {
+      const newPassword = document.getElementById('profilePassword').value;
+      const profileMessage = document.getElementById('profileMessage');
+
+      if (newPassword) {
+        const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+
+        if (error) {
+          profileMessage.textContent = 'Gagal memperbarui password: ' + error.message;
+          profileMessage.classList.add('text-warm-red');
+          showToast('Gagal update password: ' + error.message, 'error');
+        } else {
+          profileMessage.textContent = 'Password berhasil diperbarui!';
+          profileMessage.classList.add('text-neon-green');
+          showToast('Password berhasil diupdate!', 'success');
+          // Clear password field after success
+          document.getElementById('profilePassword').value = '';
+          // Close modal after a short delay
+          setTimeout(() => {
+            document.getElementById('profileModal').classList.add('hidden');
+          }, 2000);
+        }
+      } else {
+        profileMessage.textContent = 'Tidak ada perubahan yang dilakukan.';
+        profileMessage.classList.add('text-info');
+        showToast('Tidak ada perubahan', 'info');
+        // Close modal if no changes
+        setTimeout(() => {
+          document.getElementById('profileModal').classList.add('hidden');
+        }, 1000);
+      }
+    });
+
+    // DATA ENTRY
+    document.getElementById('addTransactionButton').addEventListener('click', async () => {
+      const type = document.getElementById('transactionType').value;
+      const description = document.getElementById('description').value;
+      const amount = parseFloat(document.getElementById('amount').value);
+      const dataEntryMessage = document.getElementById('dataEntryMessage');
+
+      if (!description || isNaN(amount) || amount <= 0) {
+        dataEntryMessage.textContent = 'Deskripsi dan Jumlah harus diisi dengan benar!';
+        dataEntryMessage.classList.add('text-warm-red');
+        showToast('Input tidak valid!', 'error');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert([{ type, description, amount, user_id: currentUserData.id }]);
+
+      if (error) {
+        dataEntryMessage.textContent = 'Gagal menambah transaksi: ' + error.message;
+        dataEntryMessage.classList.add('text-warm-red');
+        showToast('Gagal tambah transaksi: ' + error.message, 'error');
+      } else {
+        dataEntryMessage.textContent = 'Transaksi berhasil ditambahkan!';
+        dataEntryMessage.classList.remove('text-warm-red');
+        dataEntryMessage.classList.add('text-neon-green');
+        showToast('Transaksi berhasil!', 'success');
+        document.getElementById('description').value = '';
+        document.getElementById('amount').value = '';
+        loadTransactions(); // Reload transactions after adding
+        loadDashboardData(); // Update dashboard stats
+      }
+    });
+
+    // LOAD TRANSACTIONS
+    async function loadTransactions() {
+      const tbody = document.getElementById('transactionsTableBody');
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-light-ghost">Memuat transaksi...</td></tr>';
+      
+      const is_admin = localStorage.getItem('isAdmin') === 'true';
+      let query = supabase.from('transactions').select('*', { count: 'exact' }).order('created_at', { ascending: false });
+
+      if (!is_admin) {
+          query = query.eq('user_id', currentUserData.id);
+      }
+
+      const { data, error, count } = await query
+          .range((currentTransactionsPage - 1) * transactionsPerPage, currentTransactionsPage * transactionsPerPage - 1);
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-warm-red">Gagal memuat transaksi: ${error.message}</td></tr>`;
+        showToast('Gagal memuat transaksi: ' + error.message, 'error');
+        return;
+      }
+
+      totalTransactionsCount = count;
+      updateTransactionsPagination();
+
+      tbody.innerHTML = ''; // Clear existing rows
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-light-ghost">Belum ada transaksi.</td></tr>';
+      } else {
+        data.forEach(transaction => {
+          const row = tbody.insertRow();
+          const date = new Date(transaction.created_at).toLocaleDateString('id-ID');
+          const typeColorClass = transaction.type === 'pemasukan' ? 'text-neon-green' : 'text-warm-red';
+          const amountFormatted = new Intl.NumberFormat('id-ID').format(transaction.amount);
+
+          row.innerHTML = `
+            <td class="px-5 py-5 border-b border-deep-space text-sm">${date}</td>
+            <td class="px-5 py-5 border-b border-deep-space text-sm"><span class="${typeColorClass}">${transaction.type.toUpperCase()}</span></td>
+            <td class="px-5 py-5 border-b border-deep-space text-sm">${transaction.description}</td>
+            <td class="px-5 py-5 border-b border-deep-space text-sm">Rp ${amountFormatted}</td>
+            <td class="px-5 py-5 border-b border-deep-space text-sm">
+              <button data-id="${transaction.id}" class="delete-transaction-btn bg-warm-red hover:bg-opacity-80 text-light-ghost text-xs font-bold py-1 px-2 rounded-md transition duration-200">
+                Hapus
+              </button>
+            </td>
+          `;
+        });
+
+        // Add event listeners for delete buttons
+        document.querySelectorAll('.delete-transaction-btn').forEach(button => {
+          button.addEventListener('click', deleteTransaction);
+        });
+      }
+    }
+
+    async function deleteTransaction(event) {
+        const transactionId = event.target.dataset.id;
+        if (!confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+            return;
+        }
+
+        const { error } = await supabase
+            .from('transactions')
+            .delete()
+            .eq('id', transactionId);
+
+        if (error) {
+            showToast('Gagal menghapus transaksi: ' + error.message, 'error');
+        } else {
+            showToast('Transaksi berhasil dihapus!', 'success');
+            loadTransactions(); // Reload the list
+            loadDashboardData(); // Update dashboard stats
+        }
+    }
+
+    function updateTransactionsPagination() {
+      document.getElementById('currentTransactionsPage').textContent = currentTransactionsPage;
+      const totalPages = Math.ceil(totalTransactionsCount / transactionsPerPage);
+
+      document.getElementById('prevTransactionsPage').disabled = currentTransactionsPage === 1;
+      document.getElementById('nextTransactionsPage').disabled = currentTransactionsPage >= totalPages;
+    }
+
+    document.getElementById('prevTransactionsPage').addEventListener('click', () => {
+      if (currentTransactionsPage > 1) {
+        currentTransactionsPage--;
+        loadTransactions();
+      }
+    });
+
+    document.getElementById('nextTransactionsPage').addEventListener('click', () => {
+      const totalPages = Math.ceil(totalTransactionsCount / transactionsPerPage);
+      if (currentTransactionsPage < totalPages) {
+        currentTransactionsPage++;
+        loadTransactions();
+      }
+    });
+
+
+    // LOAD DASHBOARD DATA
+    async function loadDashboardData() {
+      const is_admin = localStorage.getItem('isAdmin') === 'true';
+      let query = supabase.from('transactions').select('*');
+
+      if (!is_admin) {
+        query = query.eq('user_id', currentUserData.id);
+      }
+      
+      const { data: transactions, error } = await query;
+
+      if (error) {
+        showToast('Gagal memuat data dashboard: ' + error.message, 'error');
+        console.error('Error loading dashboard data:', error.message);
+        return;
+      }
+
+      let totalIncome = 0;
+      let totalExpense = 0;
+      const dailyData = {}; // { 'YYYY-MM-DD': { income: 0, expense: 0, total: 0 } }
+
+      transactions.forEach(t => {
+        const date = new Date(t.created_at).toISOString().split('T')[0];
+        if (!dailyData[date]) {
+          dailyData[date] = { income: 0, expense: 0, total: 0 };
+        }
+
+        if (t.type === 'pemasukan') {
+          totalIncome += t.amount;
+          dailyData[date].income += t.amount;
+          dailyData[date].total += t.amount;
+        } else if (t.type === 'pengeluaran') {
+          totalExpense += t.amount;
+          dailyData[date].expense += t.amount;
+          dailyData[date].total -= t.amount; // Negative for expense in total
         }
       });
 
-      const labels = Object.keys(monthlyData).sort();
-      const masukData = labels.map(m => monthlyData[m].masuk);
-      const keluarData = labels.map(m => monthlyData[m].keluar);
+      document.getElementById('totalTransactions').textContent = transactions.length;
+      document.getElementById('totalIncome').textContent = `Rp ${new Intl.NumberFormat('id-ID').format(totalIncome)}`;
+      document.getElementById('totalExpense').textContent = `Rp ${new Intl.NumberFormat('id-ID').format(totalExpense)}`;
 
-      kasChart = new Chart(ctx, {
-        type: 'bar',
+      // Update Charts
+      updateDailyTransactionChart(dailyData);
+      updateIncomeExpenseChart(totalIncome, totalExpense);
+    }
+
+    function updateDailyTransactionChart(dailyData) {
+      const labels = Object.keys(dailyData).sort();
+      const dataPoints = labels.map(label => dailyData[label].total);
+
+      if (transactionsChart) {
+        transactionsChart.destroy();
+      }
+
+      const ctx = document.getElementById('dailyTransactionChart').getContext('2d');
+      transactionsChart = new Chart(ctx, {
+        type: 'line',
         data: {
           labels: labels,
-          datasets: [
-            {
-              label: 'Kas Masuk',
-              data: masukData,
-              backgroundColor: 'rgba(162, 228, 184, 0.8)', // catylac-mint
-              borderColor: 'rgba(162, 228, 184, 1)',
-              borderWidth: 1,
-              borderRadius: 5
-            },
-            {
-              label: 'Kas Keluar',
-              data: keluarData,
-              backgroundColor: 'rgba(255, 183, 178, 0.8)', // catylac-peach
-              borderColor: 'rgba(255, 183, 178, 1)',
-              borderWidth: 1,
-              borderRadius: 5
-            }
-          ]
+          datasets: [{
+            label: 'Total Harian',
+            data: dataPoints,
+            borderColor: '#00ADB5', // electric-blue
+            backgroundColor: 'rgba(0, 173, 181, 0.2)',
+            tension: 0.3,
+            fill: true
+          }]
         },
         options: {
           responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                display: false
-              },
-              ticks: {
-                callback: function(value) {
-                  return 'Rp ' + value.toLocaleString('id-ID');
-                }
-              }
-            },
-            x: {
-              grid: {
-                display: false
+          plugins: {
+            legend: {
+              labels: {
+                color: '#EEEEEE' // light-ghost
               }
             }
           },
-          plugins: {
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return context.dataset.label + ': ' + formatRupiah(context.raw);
-                }
+          scales: {
+            x: {
+              grid: {
+                color: 'rgba(26, 26, 46, 0.5)' // deep-space with transparency
+              },
+              ticks: {
+                color: '#EEEEEE' // light-ghost
               }
             },
-            legend: {
-              position: 'top',
-              labels: {
-                font: {
-                  family: 'Poppins'
-                }
+            y: {
+              grid: {
+                color: 'rgba(26, 26, 46, 0.5)' // deep-space with transparency
+              },
+              ticks: {
+                color: '#EEEEEE' // light-ghost
               }
             }
           }
@@ -772,925 +792,353 @@
       });
     }
 
-    // ==================== SOCIAL FEATURES (POSTS) ====================
-    function openMediaPicker(type) {
-      const input = document.getElementById('mediaInput');
-      if (!input) {
-        console.error("Media input element not found.");
-        return;
-      }
-      input.accept = `${type}/*`; // Set accepted file types
-      input.click(); // Trigger file picker
-
-      input.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        mediaToUpload = file;
-        const preview = document.getElementById('mediaPreview');
-        preview.innerHTML = ''; // Clear previous preview
-
-        if (file.type.startsWith('image/')) {
-          const img = document.createElement('img');
-          img.src = URL.createObjectURL(file);
-          img.className = 'media-preview-img';
-          preview.appendChild(img);
-        } else if (file.type.startsWith('video/')) {
-          const video = document.createElement('video');
-          video.src = URL.createObjectURL(file);
-          video.controls = true;
-          video.className = 'media-preview-video';
-          preview.appendChild(video);
-        } else if (file.type === 'application/pdf') {
-          const p = document.createElement('p');
-          p.textContent = `File PDF: ${file.name}`;
-          p.className = 'text-gray-600 mt-2 p-3 border border-gray-200 rounded-lg bg-gray-50';
-          preview.appendChild(p);
-        }
-      };
-    }
-
-    async function createPost() {
-      const content = document.getElementById('postContent').value.trim();
-      if (!content && !mediaToUpload) {
-        showNotification('Isi konten posting atau pilih media terlebih dahulu', 'error');
-        return;
+    function updateIncomeExpenseChart(income, expense) {
+      if (incomeExpenseChart) {
+        incomeExpenseChart.destroy();
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        showNotification('Anda harus login untuk posting', 'error');
-        return;
-      }
-
-      const post = {
-        content: content,
-        author: user.email,
-        author_name: currentUserData.displayName,
-        likes_count: 0,
-        comments: {} // Initialize comments as an empty JSONB object
-      };
-
-      // Handle upload media jika ada
-      if (mediaToUpload) {
-        showLoading();
-        try {
-          const fileName = `${Date.now()}_${mediaToUpload.name}`;
-          const filePath = `${user.id}/${fileName}`; // Path unik per user
-          const { error: uploadError } = await supabase.storage
-            .from('posts') // Pastikan ada bucket 'posts' di Supabase Storage
-            .upload(filePath, mediaToUpload);
-
-          if (uploadError) throw uploadError;
-
-          const { data: { publicUrl } } = supabase.storage
-            .from('posts')
-            .getPublicUrl(filePath);
-
-          if (mediaToUpload.type.startsWith('image/')) {
-            post.image_url = publicUrl;
-          } else if (mediaToUpload.type.startsWith('video/')) {
-            post.video_url = publicUrl;
-          } else if (mediaToUpload.type === 'application/pdf') {
-            post.pdf_url = publicUrl;
-          }
-
-          mediaToUpload = null;
-          document.getElementById('mediaPreview').innerHTML = '';
-        } catch (error) {
-          console.error("Upload error:", error);
-          showNotification('Gagal upload media', 'error');
-          hideLoading();
-          return;
-        }
-      }
-
-      try {
-        const { error } = await supabase
-          .from('posts')
-          .insert(post);
-
-        if (error) throw error;
-
-        document.getElementById('postContent').value = '';
-        showNotification('Posting berhasil dibuat', 'success');
-        loadDashboard(); // Reload dashboard to update posts
-      } catch (error) {
-        console.error("Posting error:", error);
-        showNotification('Gagal membuat posting', 'error');
-      } finally {
-        hideLoading();
-      }
-    }
-
-    async function deletePost(postId) {
-      showNotification('Apakah Anda yakin ingin menghapus posting ini?', 'info', async () => {
-        showLoading();
-        try {
-          const postToDelete = posts.find(p => p.id === postId);
-
-          // Hapus media dari storage jika ada
-          const mediaPaths = [];
-          if (postToDelete.image_url) {
-            mediaPaths.push(postToDelete.image_url.split('/').slice(postToDelete.image_url.split('/').indexOf('posts') + 1).join('/'));
-          }
-          if (postToDelete.video_url) {
-            mediaPaths.push(postToDelete.video_url.split('/').slice(postToDelete.video_url.split('/').indexOf('posts') + 1).join('/'));
-          }
-          if (postToDelete.pdf_url) {
-            mediaPaths.push(postToDelete.pdf_url.split('/').slice(postToDelete.pdf_url.split('/').indexOf('posts') + 1).join('/'));
-          }
-
-          if (mediaPaths.length > 0) {
-            const { error: deleteStorageError } = await supabase.storage.from('posts').remove(mediaPaths);
-            if (deleteStorageError) console.error("Error deleting media from storage:", deleteStorageError);
-          }
-
-          // Hapus post dari database
-          const { error } = await supabase
-            .from('posts')
-            .delete()
-            .eq('id', postId);
-
-          if (error) throw error;
-
-          showNotification('Posting berhasil dihapus', 'success');
-          loadDashboard(); // Reload dashboard to update posts
-        } catch (error) {
-          console.error("Delete post error:", error);
-          showNotification('Gagal menghapus posting', 'error');
-        } finally {
-          hideLoading();
-        }
-      });
-    }
-
-    function renderPosts() {
-      const postFeed = document.getElementById('postFeed');
-      postFeed.innerHTML = '';
-
-      posts.forEach(post => {
-        const postEl = document.createElement('div');
-        postEl.className = 'bg-white p-5 rounded-2xl shadow-md transition-all hover:shadow-lg';
-        postEl.id = `post-${post.id}`;
-
-        const isAuthor = currentUserData && post.author === currentUserData.email;
-        const postTime = formatRelativeTime(new Date(post.created_at).getTime());
-        const commentsCount = post.comments ? Object.keys(post.comments).length : 0;
-        const isLiked = post.likes_by && currentUserData && post.likes_by[currentUserData.email.replace(/[^a-zA-Z0-9]/g, '')];
-
-        postEl.innerHTML = `
-          <div class="flex justify-between items-start mb-4">
-            <div class="flex items-center">
-              <img src="${currentUserData.photoURL || `https://i.pravatar.cc/40?u=${post.author}`}"
-                   class="w-10 h-10 rounded-full mr-3 border border-gray-200">
-              <div>
-                <h4 class="font-semibold text-gray-800">${post.author_name || post.author.split('@')[0]}</h4>
-                <p class="text-xs text-gray-500">${postTime}</p>
-              </div>
-            </div>
-
-            ${isAuthor ? `
-              <div class="relative inline-block text-left dropdown">
-                <button type="button" class="inline-flex justify-center w-full rounded-md px-2 py-1 text-sm font-medium text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-catylac-blue">
-                  <i class="fas fa-ellipsis-h"></i>
-                </button>
-                <div class="dropdown-menu origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden">
-                  <div class="py-1" role="none">
-                    <button onclick="openEditPost('${post.id}')" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" role="menuitem">
-                      <i class="fas fa-edit mr-2"></i> Edit
-                    </button>
-                    <button onclick="deletePost('${post.id}')" class="text-red-600 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" role="menuitem">
-                      <i class="fas fa-trash mr-2"></i> Hapus
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ` : ''}
-          </div>
-
-          <div id="postContent-${post.id}" class="mb-4">
-            <p class="text-gray-700 mb-3">${post.content}</p>
-
-            ${post.image_url ? `
-              <img src="${post.image_url}"
-                   class="w-full rounded-lg max-h-96 object-contain border border-gray-200">
-            ` : ''}
-
-            ${post.video_url ? `
-              <video controls class="w-full rounded-lg max-h-96 border border-gray-200">
-                <source src="${post.video_url}" type="video/mp4">
-                Browser tidak mendukung video.
-              </video>
-            ` : ''}
-
-            ${post.pdf_url ? `
-              <a href="${post.pdf_url}" target="_blank" class="text-catylac-blue hover:underline flex items-center mt-2">
-                <i class="fas fa-file-pdf mr-2"></i> Lihat Dokumen PDF
-              </a>
-            ` : ''}
-          </div>
-
-          <!-- Edit Form (Hidden by default) -->
-          <div id="editForm-${post.id}" class="hidden mt-4">
-            <textarea id="editContent-${post.id}"
-                      class="app-input h-24 resize-y mb-3">${post.content}</textarea>
-
-            <div class="flex justify-end space-x-2">
-              <button onclick="cancelEditPost('${post.id}')"
-                      class="app-btn bg-gray-400 hover:bg-gray-500 text-sm px-4 py-2">
-                Batal
-              </button>
-              <button onclick="saveEditedPost('${post.id}')"
-                      class="app-btn bg-catylac-blue hover:bg-catylac-lavender text-sm px-4 py-2">
-                Simpan
-              </button>
-            </div>
-          </div>
-
-          <div class="flex justify-between text-sm text-gray-500 border-t border-b border-gray-100 py-3 my-3">
-            <button onclick="likePost('${post.id}')"
-                    class="flex items-center space-x-1 p-2 rounded-lg hover:bg-gray-100 transition-colors ${isLiked ? 'text-catylac-blue font-semibold' : ''}">
-              <i classfas fa-thumbs-up mr-1"></i>
-              <span id="likeCount-${post.id}">${post.likes_count || 0}</span>
-            </button>
-            <button onclick="toggleComments('${post.id}')" class="flex items-center space-x-1 p-2 rounded-lg hover:bg-gray-100 transition-colors">
-              <i class="fas fa-comment mr-1"></i>
-              ${commentsCount}
-            </button>
-            <button onclick="sharePost('${post.id}')" class="flex items-center space-x-1 p-2 rounded-lg hover:bg-gray-100 transition-colors">
-              <i class="fas fa-share mr-1"></i> Share
-            </button>
-          </div>
-
-          <div id="comments-${post.id}" class="hidden mt-4">
-            <div class="flex mb-4">
-              <input type="text" id="commentInput-${post.id}"
-                     placeholder="Tulis komentar..."
-                     class="flex-1 app-input rounded-r-none">
-              <button onclick="addComment('${post.id}')"
-                      class="app-btn bg-catylac-blue hover:bg-catylac-lavender px-4 py-2 rounded-l-none">
-                Kirim
-              </button>
-            </div>
-            <div id="commentList-${post.id}" class="space-y-3">
-              ${post.comments ? renderComments(post.comments) : ''}
-            </div>
-          </div>
-        `;
-
-        postFeed.appendChild(postEl);
-
-        // Inisialisasi dropdown menu
-        if (isAuthor) {
-          const dropdownBtn = postEl.querySelector('.dropdown > button');
-          const dropdownMenu = postEl.querySelector('.dropdown-menu');
-
-          dropdownBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            dropdownMenu.classList.toggle('hidden');
-          });
-
-          document.addEventListener('click', (e) => {
-            if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
-              dropdownMenu.classList.add('hidden');
+      const ctx = document.getElementById('incomeExpenseChart').getContext('2d');
+      incomeExpenseChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Pemasukan', 'Pengeluaran'],
+          datasets: [{
+            data: [income, expense],
+            backgroundColor: [
+              '#00F5D4', // neon-green
+              '#CF6679'  // warm-red
+            ],
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#EEEEEE' // light-ghost
+              }
             }
-          });
+          }
         }
       });
     }
 
-    function renderComments(comments) {
-      const commentsArray = Object.values(comments);
-      return commentsArray
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-        .map((comment, index) => {
-          return `
-            <div class="flex items-start" id="comment-${comment.id || index}">
-              <img src="https://i.pravatar.cc/30?u=${comment.author}"
-                   class="w-8 h-8 rounded-full mr-3 border border-gray-100">
-              <div class="bg-gray-100 rounded-xl px-4 py-2 flex-1">
-                <p class="font-medium text-sm text-gray-800">${comment.author_name || comment.author.split('@')[0]}</p>
-                <p class="text-gray-700 text-sm">${comment.text}</p>
-                <p class="text-gray-500 text-xs mt-1">${formatRelativeTime(new Date(comment.created_at).getTime())}</p>
-              </div>
-            </div>
+  // ADMIN PANEL - USER MANAGEMENT
+    async function loadUsers() {
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-light-ghost">Memuat pengguna...</td></tr>';
+
+      const { data, error, count } = await supabase
+        .from('profiles')
+        .select('id, email, role', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range((currentUsersPage - 1) * usersPerPage, currentUsersPage * usersPerPage - 1);
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-warm-red">Gagal memuat pengguna: ${error.message}</td></tr>`;
+        showToast('Gagal memuat pengguna: ' + error.message, 'error');
+        return;
+      }
+
+      totalUsersCount = count;
+      updateUsersPagination();
+
+      tbody.innerHTML = ''; // Clear existing rows
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-light-ghost">Belum ada pengguna terdaftar.</td></tr>';
+      } else {
+        data.forEach(user => {
+          const row = tbody.insertRow();
+          const roleBadgeClass = user.role === 'admin' ? 'bg-electric-blue text-dark-void' : 'bg-cyber-purple text-dark-void';
+
+          row.innerHTML = `
+            <td class="px-5 py-5 border-b border-deep-space text-sm">${user.email}</td>
+            <td class="px-5 py-5 border-b border-deep-space text-sm"><span class="px-2 py-1 rounded-full text-xs font-semibold ${roleBadgeClass}">${user.role.toUpperCase()}</span></td>
+            <td class="px-5 py-5 border-b border-deep-space text-sm">
+              ${user.email !== 'radiansyahhanif@gmail.com' ? `
+                <button data-id="${user.id}" data-role="${user.role}" class="toggle-admin-btn bg-cyber-purple hover:bg-opacity-80 text-dark-void text-xs font-bold py-1 px-2 rounded-md mr-2 transition duration-200">
+                  ${user.role === 'admin' ? 'Jadikan User' : 'Jadikan Admin'}
+                </button>
+                <button data-id="${user.id}" class="delete-user-btn bg-warm-red hover:bg-opacity-80 text-light-ghost text-xs font-bold py-1 px-2 rounded-md transition duration-200">
+                  Hapus
+                </button>
+              ` : '<span class="text-light-ghost/70">Admin Utama</span>'}
+            </td>
           `;
-        }).join('');
+        });
+
+        // Add event listeners for admin toggle and delete buttons
+        document.querySelectorAll('.toggle-admin-btn').forEach(button => {
+          button.addEventListener('click', toggleUserRole);
+        });
+        document.querySelectorAll('.delete-user-btn').forEach(button => {
+          button.addEventListener('click', deleteUser);
+        });
+      }
     }
 
-    async function likePost(postId) {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        showNotification('Anda harus login untuk like posting', 'error');
-        return;
-      }
+    async function toggleUserRole(event) {
+        const userId = event.target.dataset.id;
+        const currentRole = event.target.dataset.role;
+        const newRole = currentRole === 'admin' ? 'user' : 'admin';
 
-      const post = posts.find(p => p.id === postId);
-      if (!post) return;
+        if (!confirm(`Apakah Anda yakin ingin mengubah peran pengguna ini menjadi ${newRole}?`)) {
+            return;
+        }
 
-      const userKey = user.email.replace(/[^a-zA-Z0-9]/g, ''); // Sanitasi email untuk kunci objek
-      let updatedLikesBy = post.likes_by || {};
-      let newLikesCount = post.likes_count || 0;
-
-      if (updatedLikesBy[userKey]) {
-        // Unlike
-        delete updatedLikesBy[userKey];
-        newLikesCount = Math.max(0, newLikesCount - 1);
-      } else {
-        // Like
-        updatedLikesBy[userKey] = true;
-        newLikesCount += 1;
-      }
-
-      try {
         const { error } = await supabase
-          .from('posts')
-          .update({
-            likes_count: newLikesCount,
-            likes_by: updatedLikesBy
-          })
-          .eq('id', postId);
+            .from('profiles')
+            .update({ role: newRole })
+            .eq('id', userId);
 
-        if (error) throw error;
-
-        // Update local state dan UI
-        post.likes_count = newLikesCount;
-        post.likes_by = updatedLikesBy;
-        document.getElementById(`likeCount-${postId}`).textContent = newLikesCount;
-        const likeButton = document.querySelector(`#post-${postId} button[onclick="likePost('${postId}')"]`);
-        if (likeButton) {
-          if (updatedLikesBy[userKey]) {
-            likeButton.classList.add('text-catylac-blue', 'font-semibold');
-          } else {
-            likeButton.classList.remove('text-catylac-blue', 'font-semibold');
-          }
-        }
-      } catch (error) {
-        console.error("Like error:", error);
-        showNotification('Gagal melakukan like', 'error');
-      }
-    }
-
-    async function addComment(postId) {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        showNotification('Anda harus login untuk berkomentar', 'error');
-        return;
-      }
-
-      const commentInput = document.getElementById(`commentInput-${postId}`);
-      const commentText = commentInput.value.trim();
-      if (!commentText) return;
-
-      const newComment = {
-        author: user.email,
-        author_name: currentUserData.displayName,
-        text: commentText,
-        created_at: new Date().toISOString()
-      };
-
-      try {
-        // Ambil post saat ini untuk memperbarui JSONB komentar
-        const { data: currentPost, error: fetchError } = await supabase
-          .from('posts')
-          .select('comments')
-          .eq('id', postId)
-          .single();
-
-        if (fetchError) throw fetchError;
-
-        let existingComments = currentPost.comments || {};
-        const commentId = `c${Date.now()}`; // ID unik sederhana untuk komentar
-        existingComments[commentId] = newComment;
-
-        const { error: updateError } = await supabase
-          .from('posts')
-          .update({ comments: existingComments })
-          .eq('id', postId);
-
-        if (updateError) throw updateError;
-
-        commentInput.value = '';
-        showNotification('Komentar berhasil ditambahkan', 'success');
-        loadDashboard(); // Muat ulang dashboard untuk memperbarui komentar
-        document.getElementById(`comments-${postId}`).classList.remove('hidden'); // Pastikan bagian komentar terlihat
-
-      } catch (error) {
-        console.error("Comment error:", error);
-        showNotification('Gagal menambahkan komentar', 'error');
-      }
-    }
-
-    function toggleComments(postId) {
-      const commentsSection = document.getElementById(`comments-${postId}`);
-      commentsSection.classList.toggle('hidden');
-    }
-
-    async function sharePost(postId) {
-      const post = posts.find(p => p.id === postId);
-      if (!post) return;
-
-      try {
-        if (navigator.share) {
-          await navigator.share({
-            title: `Posting dari ${post.author_name}`,
-            text: post.content,
-            url: `${window.location.origin}${window.location.pathname}?post=${postId}`
-          });
+        if (error) {
+            showToast('Gagal mengubah peran pengguna: ' + error.message, 'error');
         } else {
-          const shareUrl = `${window.location.origin}${window.location.pathname}?post=${postId}`;
-          document.execCommand('copy'); // Fallback for clipboard copy
-          showNotification('Link posting telah disalin ke clipboard', 'info');
+            showToast(`Peran pengguna berhasil diubah menjadi ${newRole}!`, 'success');
+            loadUsers(); // Reload the user list
         }
-      } catch (error) {
-        console.error("Share error:", error);
-        if (error.name !== 'AbortError') { // AbortError berarti pengguna membatalkan dialog share
-          showNotification('Gagal membagikan posting', 'error');
-        }
-      }
     }
 
-    function openEditPost(postId) {
-      const post = posts.find(p => p.id === postId);
-      if (!post) return;
-
-      document.getElementById(`postContent-${postId}`).classList.add('hidden');
-      document.getElementById(`editForm-${postId}`).classList.remove('hidden');
-      document.getElementById(`editContent-${postId}`).value = post.content;
-    }
-
-    function cancelEditPost(postId) {
-      document.getElementById(`postContent-${postId}`).classList.remove('hidden');
-      document.getElementById(`editForm-${postId}`).classList.add('hidden');
-    }
-
-    async function saveEditedPost(postId) {
-      const newContent = document.getElementById(`editContent-${postId}`).value.trim();
-      if (!newContent) {
-        showNotification('Konten tidak boleh kosong', 'error');
-        return;
-      }
-
-      showLoading();
-      try {
-        const { error } = await supabase
-          .from('posts')
-          .update({ content: newContent })
-          .eq('id', postId);
-
-        if (error) throw error;
-
-        const postIndex = posts.findIndex(p => p.id === postId);
-        if (postIndex !== -1) {
-          posts[postIndex].content = newContent;
+    async function deleteUser(event) {
+        const userId = event.target.dataset.id;
+        if (!confirm('Apakah Anda yakin ingin menghapus pengguna ini? Ini akan menghapus akun dan semua data terkait!')) {
+            return;
         }
 
-        document.getElementById(`postContent-${postId}`).classList.remove('hidden');
-        document.getElementById(`editForm-${postId}`).classList.add('hidden');
-        const postContentEl = document.querySelector(`#postContent-${postId} p`);
-        if (postContentEl) {
-          postContentEl.textContent = newContent;
-        }
-        showNotification('Posting berhasil diperbarui', 'success');
-      } catch (error) {
-        console.error("Edit post error:", error);
-        showNotification('Gagal memperbarui posting', 'error');
-      } finally {
-        hideLoading();
-      }
-    }
-
-
-    // ==================== TRANSACTIONS ====================
-    document.getElementById('formKas').addEventListener('submit', async function(e) {
-      e.preventDefault();
-
-      const tgl = document.getElementById('tgl').value;
-      const ket = document.getElementById('ket').value;
-      const tipe = document.getElementById('tipe').value;
-      const jml = Number(document.getElementById('jml').value);
-      const editId = document.getElementById('editTransaksiId').value;
-
-      if (!tgl || !ket || !tipe || !jml || jml <= 0) {
-        showNotification('Harap isi semua field dengan benar', 'error');
-        return;
-      }
-
-      const transaction = {
-        tgl: tgl,
-        ket: ket,
-        tipe: tipe,
-        jml: jml
-      };
-
-      showLoading();
-
-      try {
-        if (editId) {
-          const { error } = await supabase
+        // First, delete related transactions if any
+        const { error: transactionsError } = await supabase
             .from('transactions')
-            .update(transaction)
-            .eq('id', editId);
+            .delete()
+            .eq('user_id', userId);
 
-          if (error) throw error;
-          showNotification('Transaksi berhasil diupdate', 'success');
+        if (transactionsError) {
+            showToast('Gagal menghapus transaksi terkait pengguna: ' + transactionsError.message, 'error');
+            return;
+        }
+
+        // Then, delete the user from profiles and auth.users
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .delete()
+            .eq('id', userId);
+
+        if (profileError) {
+            showToast('Gagal menghapus profil pengguna: ' + profileError.message, 'error');
+            return;
+        }
+
+        // Note: Deleting from auth.users might require Row Level Security on `auth.users` table
+        // For simplicity and assuming admin has full access via service role or RLS allows for this,
+        // we attempt to delete from auth.users directly. If RLS prevents it, this step might fail.
+        // In a real application, you might use a Supabase Function (Edge Function) for this privileged operation.
+        const { error: authUserError } = await supabase.rpc('delete_user_by_id', { user_id_to_delete: userId });
+
+        if (authUserError) {
+            // This error might happen if RLS on auth.users is too strict for direct client-side delete
+            console.error('Gagal menghapus pengguna dari auth.users:', authUserError.message);
+            showToast('Gagal menghapus pengguna sepenuhnya (auth.users): ' + authUserError.message + '. Mungkin perlu dihapus manual di dashboard Supabase.', 'error');
         } else {
-          const { error } = await supabase
-            .from('transactions')
-            .insert(transaction);
-
-          if (error) throw error;
-          showNotification('Transaksi berhasil ditambahkan', 'success');
+            showToast('Pengguna berhasil dihapus!', 'success');
         }
+        loadUsers(); // Reload the user list
+    }
 
-        resetFormTransaksi();
-        loadTransactions();
-        loadDashboard(); // Refresh dashboard totals and chart
-      } catch (error) {
-        console.error("Transaction error:", error);
-        showNotification('Gagal menyimpan transaksi', 'error');
-      } finally {
-        hideLoading();
+    function updateUsersPagination() {
+      document.getElementById('currentUsersPage').textContent = currentUsersPage;
+      const totalPages = Math.ceil(totalUsersCount / usersPerPage);
+
+      document.getElementById('prevUsersPage').disabled = currentUsersPage === 1;
+      document.getElementById('nextUsersPage').disabled = currentUsersPage >= totalPages;
+    }
+
+    document.getElementById('prevUsersPage').addEventListener('click', () => {
+      if (currentUsersPage > 1) {
+        currentUsersPage--;
+        loadUsers();
       }
     });
 
-    async function loadTransactions() {
-      showLoading();
-
-      try {
-        const { data, error } = await supabase
-          .from('transactions')
-          .select('*')
-          .order('tgl', { ascending: false });
-
-        if (error) throw error;
-
-        transactions = data;
-        updateTransactionsTable();
-      } catch (error) {
-        console.error("Load transactions error:", error);
-        showNotification('Gagal memuat transaksi', 'error');
-      } finally {
-        hideLoading();
-      }
-    }
-
-    function updateTransactionsTable() {
-      const logBody = document.getElementById('logBody');
-      logBody.innerHTML = '';
-      const isAdmin = localStorage.getItem('isAdmin') === 'true';
-
-      transactions.forEach(t => {
-        const row = logBody.insertRow();
-        row.innerHTML = `
-          <td>${formatDateShort(t.tgl)}</td>
-          <td>${t.ket}</td>
-          <td class="${t.tipe === 'Masuk' ? 'text-green-600' : 'text-red-600'} font-medium">${t.tipe}</td>
-          <td class="text-right">${formatRupiah(t.jml)}</td>
-          <td class="text-center">
-            ${isAdmin ? `
-              <button onclick="editTransaksi('${t.id}')" class="text-catylac-peach hover:text-catylac-coral mr-2 p-1 rounded-full hover:bg-gray-100">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button onclick="hapusTransaksi('${t.id}')" class="text-catylac-coral hover:text-red-500 p-1 rounded-full hover:bg-gray-100">
-                <i class="fas fa-trash"></i>
-              </button>
-            ` : ''}
-          </td>
-        `;
-      });
-    }
-
-    function editTransaksi(id) {
-      if (localStorage.getItem('isAdmin') !== 'true') {
-        showNotification('Hanya admin yang dapat mengedit', 'error');
-        return;
-      }
-
-      const transaction = transactions.find(t => t.id === id);
-      if (!transaction) return;
-
-      document.getElementById('tgl').value = transaction.tgl;
-      document.getElementById('ket').value = transaction.ket;
-      document.getElementById('tipe').value = transaction.tipe;
-      document.getElementById('jml').value = transaction.jml;
-      document.getElementById('editTransaksiId').value = id;
-
-      document.getElementById('submitTransaksi').textContent = 'Update';
-      document.getElementById('cancelEditTransaksi').classList.remove('hidden');
-
-      document.getElementById('admin').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function resetFormTransaksi() {
-      document.getElementById('formKas').reset();
-      document.getElementById('editTransaksiId').value = '';
-      document.getElementById('submitTransaksi').textContent = 'Simpan';
-      document.getElementById('cancelEditTransaksi').classList.add('hidden');
-    }
-
-    async function hapusTransaksi(id) {
-      if (localStorage.getItem('isAdmin') !== 'true') {
-        showNotification('Hanya admin yang dapat menghapus', 'error');
-        return;
-      }
-
-      showNotification('Apakah Anda yakin ingin menghapus transaksi ini?', 'info', async () => {
-        showLoading();
-        try {
-          const { error } = await supabase
-            .from('transactions')
-            .delete()
-            .eq('id', id);
-
-          if (error) throw error;
-
-          showNotification('Transaksi dihapus', 'success');
-          loadTransactions();
-          loadDashboard(); // Refresh dashboard totals and chart
-        } catch (error) {
-          console.error("Delete transaction error:", error);
-          showNotification('Gagal menghapus transaksi', 'error');
-        } finally {
-          hideLoading();
-        }
-      });
-    }
-
-    // ==================== AGENDAS ====================
-    document.getElementById('formAgenda').addEventListener('submit', async function(e) {
-      e.preventDefault();
-
-      const text = document.getElementById('agendaText').value.trim();
-      const date = document.getElementById('agendaDate').value;
-      const agendaImgFile = document.getElementById('agendaImg').files[0];
-      const editId = document.getElementById('editAgendaId').value;
-
-      if (!text || !date) {
-        showNotification('Harap isi agenda dan tanggal', 'error');
-        return;
-      }
-
-      let imageUrl = document.getElementById('currentImage').src; // Retain current image if not new one
-
-      showLoading();
-
-      if (agendaImgFile) {
-        try {
-          const fileName = `${Date.now()}_${agendaImgFile.name}`;
-          const filePath = `agendas/${fileName}`; // Simpan gambar agenda di folder terpisah
-          const { error: uploadError } = await supabase.storage
-            .from('assets') // Asumsi Anda memiliki bucket bernama 'assets' untuk semua media
-            .upload(filePath, agendaImgFile);
-
-          if (uploadError) throw uploadError;
-
-          const { data: { publicUrl } } = supabase.storage.from('assets').getPublicUrl(filePath);
-          imageUrl = publicUrl;
-        } catch (error) {
-          console.error("Image upload error:", error);
-          showNotification('Gagal mengunggah gambar agenda', 'error');
-          hideLoading();
-          return;
-        }
-      } else if (editId && !document.getElementById('currentImageContainer').classList.contains('hidden') && !imageUrl) {
-        // Jika gambar dihapus saat edit, set imageUrl ke null
-        imageUrl = null;
-      }
-
-
-      const agenda = {
-        text: text,
-        date: date,
-        image_url: imageUrl // Simpan URL gambar
-      };
-
-      try {
-        if (editId) {
-          const { error } = await supabase
-            .from('agendas')
-            .update(agenda)
-            .eq('id', editId);
-
-          if (error) throw error;
-          showNotification('Agenda berhasil diupdate', 'success');
-        } else {
-          const { error } = await supabase
-            .from('agendas')
-            .insert(agenda);
-
-          if (error) throw error;
-          showNotification('Agenda berhasil ditambahkan', 'success');
-        }
-
-        resetFormAgenda();
-        loadAgendas();
-      } catch (error) {
-        console.error("Agenda error:", error);
-        showNotification('Gagal menyimpan agenda', 'error');
-      } finally {
-        hideLoading();
+    document.getElementById('nextUsersPage').addEventListener('click', () => {
+      const totalPages = Math.ceil(totalUsersCount / usersPerPage);
+      if (currentUsersPage < totalPages) {
+        currentUsersPage++;
+        loadUsers();
       }
     });
 
-    async function loadAgendas() {
-      showLoading();
+    document.getElementById('addAdminButton').addEventListener('click', async () => {
+        const newAdminEmail = document.getElementById('newAdminEmail').value;
+        const adminMessage = document.getElementById('adminMessage');
 
-      try {
-        const { data, error } = await supabase
-          .from('agendas')
-          .select('*')
-          .order('date', { ascending: true });
-
-        if (error) throw error;
-
-        agendas = data;
-        renderAgendas();
-      } catch (error) {
-        console.error("Load agendas error:", error);
-        showNotification('Gagal memuat agenda', 'error');
-      } finally {
-        hideLoading();
-      }
-    }
-
-    function renderAgendas() {
-      const agendaList = document.getElementById('agendaList');
-      agendaList.innerHTML = '';
-      const isAdmin = localStorage.getItem('isAdmin') === 'true';
-
-      agendas.forEach(agenda => {
-        const agendaEl = document.createElement('div');
-        agendaEl.className = 'bg-white rounded-2xl shadow-md p-5 transition-all hover:shadow-lg flex flex-col sm:flex-row items-start sm:items-center gap-4';
-
-        agendaEl.innerHTML = `
-          <div class="flex-1">
-            <h3 class="font-bold text-xl text-catylac-blue mb-1">${agenda.text}</h3>
-            <p class="text-md text-gray-600 mb-2"><i class="fas fa-calendar-alt mr-2"></i> ${formatDate(agenda.date)}</p>
-            ${agenda.image_url ? `<img src="${agenda.image_url}" class="mt-2 max-h-40 object-contain rounded-lg border border-gray-200">` : ''}
-          </div>
-          ${isAdmin ? `
-            <div class="flex space-x-3 mt-3 sm:mt-0">
-              <button onclick="editAgenda('${agenda.id}')" class="text-catylac-peach hover:text-catylac-coral p-2 rounded-full hover:bg-gray-100">
-                <i class="fas fa-edit text-lg"></i>
-              </button>
-              <button onclick="hapusAgenda('${agenda.id}')" class="text-catylac-coral hover:text-red-500 p-2 rounded-full hover:bg-gray-100">
-                <i class="fas fa-trash text-lg"></i>
-              </button>
-            </div>
-          ` : ''}
-        `;
-
-        agendaList.appendChild(agendaEl);
-      });
-    }
-
-    function editAgenda(id) {
-      if (localStorage.getItem('isAdmin') !== 'true') {
-        showNotification('Hanya admin yang dapat mengedit', 'error');
-        return;
-      }
-
-      const agenda = agendas.find(a => a.id === id);
-      if (!agenda) return;
-
-      document.getElementById('agendaText').value = agenda.text;
-      document.getElementById('agendaDate').value = agenda.date;
-      document.getElementById('editAgendaId').value = id;
-
-      if (agenda.image_url) {
-        document.getElementById('currentImageContainer').classList.remove('hidden');
-        document.getElementById('currentImage').src = agenda.image_url;
-      } else {
-        document.getElementById('currentImageContainer').classList.add('hidden');
-        document.getElementById('currentImage').src = '';
-      }
-
-      document.getElementById('submitAgenda').textContent = 'Update';
-      document.getElementById('cancelEditAgenda').classList.remove('hidden');
-      document.getElementById('admin').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    async function hapusAgenda(id) {
-      if (localStorage.getItem('isAdmin') !== 'true') {
-        showNotification('Hanya admin yang dapat menghapus', 'error');
-        return;
-      }
-
-      showNotification('Apakah Anda yakin ingin menghapus agenda ini?', 'info', async () => {
-        showLoading();
-        try {
-          const agendaToDelete = agendas.find(a => a.id === id);
-
-          // Hapus gambar dari storage jika ada
-          if (agendaToDelete.image_url) {
-            const pathSegments = agendaToDelete.image_url.split('/');
-            const filePathInBucket = pathSegments.slice(pathSegments.indexOf('agendas') + 1).join('/'); // Pastikan path benar
-            const { error: deleteImageError } = await supabase.storage.from('assets').remove([filePathInBucket]);
-            if (deleteImageError) console.error("Error deleting agenda image from storage:", deleteImageError);
-          }
-
-          // Hapus agenda dari database
-          const { error } = await supabase
-            .from('agendas')
-            .delete()
-            .eq('id', id);
-
-          if (error) throw error;
-
-          showNotification('Agenda dihapus', 'success');
-          loadAgendas();
-        } catch (error) {
-          console.error("Delete agenda error:", error);
-          showNotification('Gagal menghapus agenda', 'error');
-        } finally {
-          hideLoading();
+        if (!newAdminEmail) {
+            adminMessage.textContent = 'Email tidak boleh kosong!';
+            adminMessage.classList.add('text-warm-red');
+            showToast('Email kosong!', 'error');
+            return;
         }
-      });
+
+        // First, check if user exists in auth.users or profiles
+        const { data: userData, error: userError } = await supabase
+            .from('profiles')
+            .select('id, email')
+            .eq('email', newAdminEmail)
+            .single();
+
+        if (userError && userError.code !== 'PGRST116') { // PGRST116 means no rows found
+            adminMessage.textContent = 'Gagal mencari pengguna: ' + userError.message;
+            adminMessage.classList.add('text-warm-red');
+            showToast('Gagal mencari pengguna: ' + userError.message, 'error');
+            return;
+        }
+
+        if (userData) {
+            // User exists, just update role
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ role: 'admin' })
+                .eq('id', userData.id);
+            
+            if (updateError) {
+                adminMessage.textContent = 'Gagal menjadikan admin: ' + updateError.message;
+                adminMessage.classList.add('text-warm-red');
+                showToast('Gagal menjadikan admin: ' + updateError.message, 'error');
+            } else {
+                adminMessage.textContent = `${newAdminEmail} berhasil dijadikan admin!`;
+                adminMessage.classList.remove('text-warm-red');
+                adminMessage.classList.add('text-neon-green');
+                showToast('Berhasil dijadikan admin!', 'success');
+                document.getElementById('newAdminEmail').value = '';
+                loadUsers();
+            }
+        } else {
+            // User does not exist, need to invite them
+            const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(newAdminEmail);
+
+            if (inviteError) {
+                adminMessage.textContent = 'Gagal mengundang pengguna baru: ' + inviteError.message;
+                adminMessage.classList.add('text-warm-red');
+                showToast('Gagal mengundang pengguna: ' + inviteError.message, 'error');
+            } else {
+                // If invite successful, then add to profiles table with admin role
+                // The invited user will have a 'PENDING' status in auth.users until they click the invite link.
+                // We'll insert into profiles here, they'll match up when they sign up.
+                const { error: insertProfileError } = await supabase
+                    .from('profiles')
+                    .insert({ id: inviteData.user.id, email: newAdminEmail, role: 'admin' });
+
+                if (insertProfileError) {
+                    adminMessage.textContent = 'Gagal menyimpan profil admin baru: ' + insertProfileError.message;
+                    adminMessage.classList.add('text-warm-red');
+                    showToast('Gagal menyimpan profil admin: ' + insertProfileError.message, 'error');
+                } else {
+                    adminMessage.textContent = `Undangan admin ke ${newAdminEmail} berhasil dikirim! Pengguna perlu mengklik link di email untuk mendaftar.`;
+                    adminMessage.classList.remove('text-warm-red');
+                    adminMessage.classList.add('text-neon-green');
+                    showToast('Undangan admin terkirim!', 'info');
+                    document.getElementById('newAdminEmail').value = '';
+                    loadUsers();
+                }
+            }
+        }
+    });
+
+    // Initial data load and authentication check
+    async function loadInitialData() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            currentUserData = {
+                id: user.id, // Ensure user ID is available
+                email: user.email,
+                displayName: user.user_metadata?.full_name || user.email.split('@')[0],
+                photoURL: user.user_metadata?.avatar_url || `https://i.pravatar.cc/40?u=${user.email}`
+            };
+
+            document.getElementById('currentUserAvatar').src = currentUserData.photoURL;
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('appContainer').classList.remove('hidden');
+            
+            // Check if user is admin based on email
+            if (user.email === 'radiansyahhanif@gmail.com') {
+                localStorage.setItem('isAdmin', 'true');
+                document.getElementById('adminNav').classList.remove('hidden');
+                showSection('dashboardSection'); // Default to dashboard for admin
+            } else {
+                localStorage.setItem('isAdmin', 'false');
+                document.getElementById('adminNav').classList.add('hidden'); // Hide admin nav for regular users
+                showSection('dataEntrySection'); // Default to data entry for regular users
+            }
+            loadDashboardData();
+            loadTransactions();
+        } else {
+            document.getElementById('appContainer').classList.add('hidden');
+            document.getElementById('loginSection').style.display = 'flex';
+        }
     }
 
-    function removeAgendaImage() {
-      document.getElementById('currentImageContainer').classList.add('hidden');
-      document.getElementById('currentImage').src = ''; // Clear the image source
-      document.getElementById('agendaImg').value = ''; // Clear file input
-    }
 
-    function cancelEditAgenda() {
-      resetFormAgenda();
-    }
-
-    function resetFormAgenda() {
-      document.getElementById('formAgenda').reset();
-      document.getElementById('editAgendaId').value = '';
-      document.getElementById('submitAgenda').textContent = 'Simpan';
-      document.getElementById('cancelEditAgenda').classList.add('hidden');
-      document.getElementById('currentImageContainer').classList.add('hidden');
-      document.getElementById('currentImage').src = '';
-      document.getElementById('agendaImg').value = ''; // Clear file input
-    }
-
-    function exportToPDF() {
-      showNotification('Fitur export PDF akan diimplementasikan', 'info');
-    }
-
-    // ==================== INITIALIZATION ====================
-    function loadInitialData() {
-      loadDashboard();
-      loadAgendas();
-      // Tambahkan pemanggilan fungsi lain yang perlu di-load saat login
-    }
-
-    // Pantau perubahan status auth
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    // Supabase Auth State Change Listener
+    supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         const user = session.user;
         currentUserData = {
+          id: user.id, // Important: Store user ID
           email: user.email,
           displayName: user.user_metadata?.full_name || user.email.split('@')[0],
           photoURL: user.user_metadata?.avatar_url || `https://i.pravatar.cc/40?u=${user.email}`
         };
-
+        
         // Update avatar
         document.getElementById('currentUserAvatar').src = currentUserData.photoURL;
-
+        
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('appContainer').classList.remove('hidden');
-
+        
         // Cek jika user adalah admin
-        if (user.email === 'radiansyahhanif@gmail.com') { // Ganti dengan email admin Anda
+        if (user.email === 'radiansyahhanif@gmail.com') {
           localStorage.setItem('isAdmin', 'true');
           document.getElementById('adminNav').classList.remove('hidden');
         } else {
           localStorage.setItem('isAdmin', 'false');
           document.getElementById('adminNav').classList.add('hidden');
         }
-
-        loadInitialData();
+        
+        // Initial load of data and setting default section based on role
+        if (localStorage.getItem('isAdmin') === 'true') {
+            showSection('dashboardSection');
+        } else {
+            showSection('dataEntrySection');
+        }
+        loadDashboardData();
+        loadTransactions(); // Load transactions for current user/all
       } else {
-        // User logout atau belum login
         document.getElementById('appContainer').classList.add('hidden');
         document.getElementById('loginSection').style.display = 'flex';
-        // Clear currentUserData on logout
-        currentUserData = null;
-        // Reset active nav item and hide admin nav
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        document.querySelector('.nav-item').classList.add('active'); // Set dashboard as default active
-        document.getElementById('adminNav').classList.add('hidden');
+        // Clear charts when logging out
+        if (transactionsChart) transactionsChart.destroy();
+        if (incomeExpenseChart) incomeExpenseChart.destroy();
       }
-      hideLoading(); // Pastikan loading disembunyikan setelah status auth diproses
+    });
+    
+    // Close dropdown menus when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+          menu.classList.add('hidden');
+        });
+      }
     });
 
-    // Panggil fungsi ini saat DOM sepenuhnya dimuat untuk memeriksa status auth awal
+    // Initialize application when the DOM is fully loaded
     document.addEventListener('DOMContentLoaded', () => {
-      // onAuthStateChange akan terpicu secara otomatis saat inisialisasi Supabase client
-      // dan saat ada sesi yang tersimpan di localStorage.
-      // Cukup tampilkan loading di awal, dan onAuthStateChange akan menyembunyikannya
-      // setelah menentukan status auth.
-      showLoading();
+        loadInitialData(); // This will check auth state and load data/UI accordingly
+        
+        // Avatar dropdown toggle
+        document.getElementById('currentUserAvatar').addEventListener('click', function() {
+            const dropdownMenu = this.closest('.dropdown').querySelector('.dropdown-menu');
+            dropdownMenu.classList.toggle('hidden');
+        });
     });
-
   </script>
 </body>
 </html>
-
